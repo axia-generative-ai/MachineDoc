@@ -1,5 +1,6 @@
 import enum
 from sqlalchemy import Column, String, BigInteger, Enum, DateTime, func
+from sqlalchemy.orm import relationship
 from app.db.session import Base
 
 # --- ENUM 클래스 정의 (Spring의 Enum과 동일한 역할) ---
@@ -49,3 +50,6 @@ class User(Base):
     # created_at: TIMESTAMP, Not Null, 기본값 현재시간
     # server_default=func.now()는 DB가 직접 시간을 생성하게 합니다.
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    manuals = relationship("SavedManual", back_populates="creator")
+    search_histories = relationship("SearchHistory", back_populates="user")

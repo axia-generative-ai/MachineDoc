@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text  # SQL 구문을 직접 실행하기 위해 필요
 from app.core.database import get_db
 from app.core.config import config
-from app.db.session import engine, Base
+from app.db.session import engine
+from app.db.base import Base
 
 from app.api.v1.endpoints import auth, users
 
