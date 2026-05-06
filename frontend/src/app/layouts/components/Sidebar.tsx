@@ -7,7 +7,7 @@ type SidebarProps = {
 };
 
 const primaryItems = [
-  { to: '/', label: '대시보드', icon: Home },
+  { to: '/dashboard', label: '대시보드', icon: Home },
   { to: '/error-search', label: '오류 검색', icon: Search },
   { to: '/detection', label: '이상감지', icon: Activity },
 ];

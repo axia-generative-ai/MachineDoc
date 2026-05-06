@@ -7,14 +7,19 @@ import { DashboardPage } from '../../pages/DashboardPage/DashboardPage';
 import { DetectionPage } from '../../pages/DetectionPage/DetectionPage';
 import { ErrorSearchPage } from '../../pages/ErrorSearchPage/ErrorSearchPage';
 import { ErrorSearchResultPage } from '../../pages/ErrorSearchResultPage/ErrorSearchResultPage';
+import { LoginPage } from '../../pages/LoginPage/LoginPage';
 import { NewPage } from '../../pages/NewPage/NewPage';
+import { SignupPage } from '../../pages/SignupPage/SignupPage';
 
 export const routes = createBrowserRouter([
+  { path: '/', element: <LoginPage /> },
+  { path: '/login', element: <LoginPage /> },
+  { path: '/signup', element: <SignupPage /> },
   {
     path: '/',
     element: <MainLayout />,
     children: [
-      { index: true, element: <DashboardPage /> },
+      { path: 'dashboard', element: <DashboardPage /> },
       { path: 'error-search', element: <ErrorSearchPage /> },
       { path: 'error-search/result', element: <ErrorSearchResultPage /> },
       { path: 'detection', element: <DetectionPage /> },
