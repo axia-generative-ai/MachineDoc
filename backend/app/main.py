@@ -3,8 +3,23 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text  # SQL 구문을 직접 실행하기 위해 필요
 from app.core.database import get_db
 from app.core.config import config
+from app.db.session import engine, Base
 
-app = FastAPI()
+from app.api.v1.endpoints import auth, users
+
+
+app = FastAPI(title="FactoryGuard API",
+    description="스마트 팩토리 보안 및 관리 시스템을 위한 백엔드 API 문서입니다.",
+    version="1.0.0"
+)
+
+Base.metadata.create_all(bind=engine)
+
+# =====================
+# auth
+# =====================
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["인증"])
+app.include_router(users.router, prefix="/api/v1/users", tags=["유저"])
 
 @app.get("/")
 def read_root():
