@@ -1,4 +1,6 @@
-import { Bell, Menu, Search, User } from 'lucide-react';
+import { Menu, Search, User } from 'lucide-react';
+
+import { NotificationBellButton } from '../../../features/notification/components/NotificationBellButton';
 
 type TopBarProps = {
   isSidebarOpen: boolean;
@@ -41,10 +43,7 @@ export function TopBar({ isSidebarOpen, onMenuClick }: TopBarProps) {
           작업자 남궁현
         </span>
         <span className="h-8 w-px bg-slate-700" />
-        <span className="relative">
-          <Bell className="h-7 w-7 text-slate-300" />
-          <span className="absolute -right-3 -top-3 grid h-6 w-6 place-items-center rounded-full bg-red-500 text-xs font-black text-white">3</span>
-        </span>
+        <NotificationBellButton />
       </div>
     </header>
   );
