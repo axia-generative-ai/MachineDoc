@@ -6,7 +6,7 @@ from app.core.config import config
 from app.db.session import engine
 from app.db.base import Base
 
-from app.api.v1.endpoints import auth, users, search
+from app.api.v1.endpoints import auth, users, search, manual
 
 
 app = FastAPI(title="FactoryGuard API",
@@ -21,6 +21,8 @@ app.include_router(auth.router, prefix="/api/v1/auth", tags=["인증"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["유저"])
 
 app.include_router(search.router, prefix="/api/v1/search", tags=["검색"])
+
+app.include_router(manual.router, prefix="/api/v1/manual", tags=["매뉴얼"])
 
 @app.get("/")
 def read_root():

@@ -8,7 +8,7 @@ router = APIRouter()
 
 @router.get("/code", summary="오류 코드 기반 AI 분석 및 이력 저장")
 async def search_error_code(
-    error_code: str = Query(..., description="검색할 오류 코드 (예: E0001)", example="E0001"),
+    error_code: str = Query(..., description="검색할 오류 코드 (예: E0001)", examples="E0001"),
     db: Session = Depends(deps.get_db),
     current_user: User = Depends(deps.get_current_user)
 ):
@@ -24,3 +24,4 @@ async def search_error_code(
     """
     result = await search_service.get_ai_diagnosis(db, error_code, current_user.user_id)
     return result
+
