@@ -66,3 +66,4 @@ postgres_data/
 # =====================
 *.log
 logs/
+frontend/src/shared/config/env.ts
