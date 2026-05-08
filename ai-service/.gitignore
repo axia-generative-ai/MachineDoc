@@ -55,10 +55,17 @@ desktop.ini
 # =====================
 # AI / Data
 # =====================
-ai-service/data/chroma_db/
+.manuals/
 *.sqlite3
 *.db
-ai-service/tests/eval/results/
+tests/eval/results/
+
+# Real customer manuals — never committed (Phase 6 differentiation rework).
+# Cross-validate against synthetic manuals from scripts/generate_manuals.py.
+manuals/
+
+# Manual web harness & backend stub — local validation only, not production.
+tests/manual/
 
 # =====================
 # Logs

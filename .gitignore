@@ -55,9 +55,9 @@ desktop.ini
 # =====================
 # AI / Data
 # =====================
-ai-service/data/chroma_db/
 *.sqlite3
 *.db
+.manuals/
 
 # =====================
 # Logs
