@@ -1,6 +1,6 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+﻿import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-import { Panel } from '../../../shared/ui/Panel';
+import { Panel } from '../../../../shared/ui/Panel';
 
 const skeletonLines = [
   'w-36',
@@ -60,3 +60,4 @@ export function ManualPreview() {
     </Panel>
   );
 }
+

@@ -2,17 +2,32 @@ import type { LucideIcon } from 'lucide-react';
 import { Link, NavLink } from 'react-router-dom';
 import { Activity, Bell, ClipboardCheck, FileText, Folder, History, Home, Search, Settings, ShieldCheck, User } from 'lucide-react';
 
+import { useAuthSession } from '../../../features/auth/hooks/useAuthSession';
+import type { UserRole } from '../../../entities/user/model/user.types';
+
 type SidebarProps = {
   isOpen: boolean;
 };
 
-const primaryItems = [
-  { to: '/', label: '대시보드', icon: Home },
+type SidebarItem = {
+  to: string;
+  label: string;
+  icon: LucideIcon;
+  allowedRoles?: UserRole[];
+};
+
+type SidebarGroup = {
+  title: string;
+  items: SidebarItem[];
+};
+
+const primaryItems: SidebarItem[] = [
+  { to: '/dashboard', label: '대시보드', icon: Home },
   { to: '/error-search', label: '오류 검색', icon: Search },
   { to: '/detection', label: '이상감지', icon: Activity },
 ];
 
-const groupedItems = [
+const groupedItems: SidebarGroup[] = [
   {
     title: 'MONITOR',
     items: [
@@ -29,7 +44,7 @@ const groupedItems = [
   },
   {
     title: 'ADMIN',
-    items: [{ to: '/admin', label: '관리자', icon: User }],
+    items: [{ to: '/admin', label: '관리자', icon: User, allowedRoles: ['ADMIN'] }],
   },
   {
     title: 'ACCOUNT',
@@ -37,7 +52,7 @@ const groupedItems = [
   },
 ];
 
-function SidebarLink({ to, label, icon: Icon }: { to: string; label: string; icon: LucideIcon }) {
+function SidebarLink({ to, label, icon: Icon }: SidebarItem) {
   return (
     <NavLink
       to={to}
@@ -56,15 +71,29 @@ function SidebarLink({ to, label, icon: Icon }: { to: string; label: string; ico
   );
 }
 
+function canShowItem(item: SidebarItem, role?: UserRole) {
+  if (!item.allowedRoles) return true;
+  if (!role) return false;
+  return item.allowedRoles.includes(role);
+}
+
 export function Sidebar({ isOpen }: SidebarProps) {
+  const { user } = useAuthSession();
+
+  const visibleGroups = groupedItems
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => canShowItem(item, user?.role)),
+    }))
+    .filter((group) => group.items.length > 0);
+
   return (
     <aside
-      // 모바일은 overlay drawer, 데스크톱은 고정 sidebar처럼 동작합니다.
       className={`fixed inset-y-0 left-0 z-20 w-[78vw] max-w-[320px] border-r border-slate-700/70 bg-[#071018]/95 px-4 py-7 shadow-2xl shadow-black/40 backdrop-blur-xl transition-transform duration-300 ease-out lg:w-[252px] lg:max-w-none ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}
     >
-      <Link to="/" className="mb-10 flex items-center gap-2 px-1 text-blue-400">
+      <Link to="/dashboard" className="mb-10 flex items-center gap-2 px-1 text-blue-400">
         <ShieldCheck className="h-8 w-8 fill-blue-500/20" strokeWidth={2.6} />
         <span className="text-[23px] font-extrabold tracking-[-0.05em]">FACTORYGUARD</span>
       </Link>
@@ -76,7 +105,7 @@ export function Sidebar({ isOpen }: SidebarProps) {
       </nav>
 
       <div className="mt-6 space-y-6">
-        {groupedItems.map((group) => (
+        {visibleGroups.map((group) => (
           <section key={group.title}>
             <div className="mb-2 flex items-center gap-3 px-1 text-[13px] font-semibold text-slate-400">
               <span>{group.title}</span>
@@ -84,7 +113,7 @@ export function Sidebar({ isOpen }: SidebarProps) {
             </div>
             <div className="space-y-2">
               {group.items.map((item) => (
-                <SidebarLink key={item.to} {...item} />
+                <SidebarLink key={`${group.title}-${item.label}`} {...item} />
               ))}
             </div>
           </section>

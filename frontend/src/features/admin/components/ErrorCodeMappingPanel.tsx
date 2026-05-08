@@ -1,5 +1,5 @@
-import { errorCodeMappings } from '../model/adminData';
 import { Panel } from '../../../shared/ui/Panel';
+import { errorCodeMappings } from '../model/adminData';
 import { AdminStatsGrid } from './AdminStatsGrid';
 
 export function ErrorCodeMappingPanel() {

@@ -1,7 +1,7 @@
-import { ChevronRight } from 'lucide-react';
+﻿import { ChevronRight } from 'lucide-react';
 
-import { relatedManuals } from '../model/errorSearchData';
-import { Panel } from '../../../shared/ui/Panel';
+import { relatedManuals } from '../../model/errorSearchData';
+import { Panel } from '../../../../shared/ui/Panel';
 
 type RelatedManualCardProps = {
   manual: (typeof relatedManuals)[number];
@@ -33,3 +33,4 @@ export function RelatedManualCard({ manual }: RelatedManualCardProps) {
     </Panel>
   );
 }
+

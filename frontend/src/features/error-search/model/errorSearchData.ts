@@ -1,7 +1,5 @@
 import { ClipboardList, Droplet, FileText, Snowflake, Stethoscope, Wrench } from 'lucide-react';
 
-export const errorSearchBreadcrumbs = ['홈', '오류 검색', 'E-204 결과'] as const;
-
 export const actionSteps = [
   {
     step: 1,
