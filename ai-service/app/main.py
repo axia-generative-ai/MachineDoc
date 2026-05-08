@@ -6,6 +6,7 @@ from fastapi import FastAPI
 
 from app.api.anomaly import router as anomaly_router
 from app.api.ingest import router as ingest_router
+from app.api.recommend import router as recommend_router
 from app.api.search import router as search_router
 from app.config import get_settings
 
@@ -13,14 +14,22 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=get_settings().log_level)
 
 app = FastAPI(
-    title="FactoryGuard AI Service",
+    title="FactoryGuard AI 서비스",
     version="0.1.0",
-    description="Equipment manual RAG and anomaly analysis API.",
+    description=(
+        "스마트팩토리 설비 매뉴얼 RAG 검색과 이상감지 분석을 제공하는 AI 서비스입니다.\n\n"
+        "- 오류코드 → 매뉴얼 조치 절차 검색 (`/api/v1/search`)\n"
+        "- 가상 센서 로그 → 룰엔진 + LLM 이상 분석 (`/api/v1/anomaly`)\n"
+        "- 매뉴얼 PDF 업로드 → 청킹/임베딩/색인 (`/api/v1/ingest`)\n"
+        "- 설비/카테고리 기반 매뉴얼 추천 (`/api/v1/manuals/recommend`)\n\n"
+        "백엔드는 위 4개 endpoint를 호출해 풀스택 통합을 구성합니다."
+    ),
 )
 
 app.include_router(search_router)
 app.include_router(anomaly_router)
 app.include_router(ingest_router)
+app.include_router(recommend_router)
 
 
 @app.on_event("startup")
@@ -41,8 +50,9 @@ def _warmup_embedder() -> None:
         logger.warning("embedder warmup failed: %s", exc)
 
 
-@app.get("/health")
+@app.get("/health", tags=["헬스체크"], summary="liveness 확인")
 def health() -> dict[str, str]:
+    """서비스 가동 여부만 확인. DB / Ollama 상태는 보지 않음."""
     return {"status": "ok"}
 
 
