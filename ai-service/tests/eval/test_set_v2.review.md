@@ -361,3 +361,28 @@ A`
     1. [rerank 0.140] yaskawa_ga700_technical p319 — 6.7 Auto-Tuning Errors / Possible Solution  ✓
     2. [rerank 0.124] yaskawa_ga700_technical p828 — It is also possible to set a motor overload alarm. Set H2-01 = 1F [Terminal M1-M2 Function Selection
     3. [rerank 0.124] yaskawa_ga700_technical p219 — It is also possible to set a motor overload alarm. Set H2-01 = 1F [Terminal M1-M2 Function Selection
+
+---
+
+## Ground-truth correction — v2_022 (2026-05-08)
+
+Original gold was `1ebede7f.. p50 [Motor thermal state]`, where "OLF" only
+appears as the threshold label (`118% = "OLF" threshold`). For the query
+"Schneider ATV320 fault OLF — cause?" that page is not actually the answer
+— it's a measurement description, not a fault definition.
+
+Inspected every Schneider section that references OLF:
+
+| section | page | heading_path | content |
+|---|---|---|---|
+| 1ebede7f | 50 | [Motor thermal state] | OLF mentioned as a threshold label |
+| a947ad57 | 65 | [Past fault 1] / [Motor overload] (OLF): Motor overload | label only |
+| 03824220 | 68 | [CURRENT FAULT LIST] / [Motor overload] (OLF): Motor overload | label only |
+| 5785fdfd | 311 | [OLF] | empty narrative shell |
+| **c165d9eb** | **311** | **Fault Codes / OLF (table)** | **"Triggered by excessive motor current. Check motor thermal protection, check motor load. Wait for the motor to cool down before restarting."** |
+
+The Fault Codes table row on p311 is the only section that actually
+explains the cause and remedy. Updated `v2_022.expected_section_id` to
+`c165d9eb-..` and widened `expected_pages` to `[50, 65, 68, 311]` (every
+page where OLF is a top-level heading; any of them is a defensible
+retrieval).

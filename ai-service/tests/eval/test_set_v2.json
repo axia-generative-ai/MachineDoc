@@ -366,16 +366,19 @@
     "error_code": "OLF",
     "natural_language_query": "Schneider ATV320 fault OLF — cause?",
     "expected_manual_id": "schneider_atv320_programming",
-    "expected_section_id": "1ebede7f-aef4-4888-8d98-ca121fd4d478",
+    "expected_section_id": "c165d9eb-3282-421a-8f67-562382cb5c6e",
     "expected_pages": [
       50,
-      50
+      65,
+      68,
+      311
     ],
     "heading_path": [
-      "[Motor thermal state]"
+      "Fault Codes",
+      "OLF"
     ],
-    "section_type": "narrative",
-    "snippet": "[Motor thermal state]\n%\nMotor thermal state.\n100% = Nominal thermal state, 118% = \"OLF\" threshold (motor overload)."
+    "section_type": "table",
+    "snippet": "OLF\n[Motor overload]\n• Triggered by excessive motor current.\n• Check the setting of the motor thermal protection, check the motor load. Wait for the motor to cool down before restarting."
   },
   {
     "id": "v2_023",
