@@ -4,8 +4,7 @@ from sqlalchemy.orm import Session
 from app.api import deps
 from app.schemas import user as user_schema
 from app.models.user import User
-from app.service.user_service import update_user_info, delete_user_account, get_pending_user_list, update_my_info, get_user_list
-
+from app.service.user_service import user_service
 router = APIRouter()
 
 @router.get(
@@ -27,7 +26,7 @@ def read_users(
     - **limit**: 조회할 개수 (기본값: 100, 최대: 100)
     - 응답 데이터에는 비밀번호와 같은 민감 정보가 제외된 **UserRead** 형식이 적용됩니다.
     """
-    return get_user_list(db, skip=skip, limit=limit)
+    return user_service.get_user_list(db, skip=skip, limit=limit)
 
 @router.patch(
     "/me", 
@@ -45,7 +44,7 @@ def update_user_me(
     - 수정하고 싶은 필드만 보내면 해당 필드만 업데이트됩니다.
     - 관리자 권한 없이 일반 사용자도 자신의 토큰만 있다면 가능합니다.
     """
-    return update_my_info(db, current_user=current_user, obj_in=obj_in)
+    return user_service.update_my_info(db, current_user=current_user, obj_in=obj_in)
 
 @router.patch(
     "/{user_id}", 
@@ -64,7 +63,7 @@ def update_user(
     - 수정이 필요한 필드만 데이터에 포함하여 요청하세요.
     - 존재하지 않는 user_id인 경우 404 에러를 반환합니다.
     """
-    return update_user_info(db, user_id=user_id, obj_in=obj_in)
+    return user_service.update_user_info(db, user_id=user_id, obj_in=obj_in)
 
 @router.delete(
     "/{user_id}", 
@@ -81,7 +80,7 @@ def delete_user(
     - **안전장치**: 관리자 본인의 계정은 이 API로 삭제할 수 없습니다.
     - 성공 시 삭제 완료 메시지를 반환합니다.
     """
-    return delete_user_account(
+    return user_service.delete_user_account(
         db, 
         target_user_id=user_id, 
         admin_user_id=admin_user.user_id
@@ -102,4 +101,4 @@ def read_pending_users(
     - 결과는 **List[UserRead]** 형태로 반환됩니다.
     - 권한이 없는 일반 사용자가 호출할 경우 **403 Forbidden** 에러가 발생합니다.
     """
-    return get_pending_user_list(db)
+    return user_service.get_pending_user_list(db)

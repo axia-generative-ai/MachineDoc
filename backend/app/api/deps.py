@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 from app.core.config import config
-from app.crud import crud_user
+from app.crud.crud_user import user_repository
 from app.models.user import User, UserRole
 from app.core.database import get_db
 
@@ -27,7 +27,7 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
         raise credentials_exception
 
     # 3. DB에서 유저 확인
-    user = crud_user.get_user_by_email(db, email=email)
+    user = user_repository.get_user_by_email(db, email=email)
     if user is None:
         raise credentials_exception
         

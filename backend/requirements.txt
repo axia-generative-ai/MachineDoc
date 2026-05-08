@@ -2,6 +2,9 @@
 fastapi
 uvicorn[standard]
 
+# HTTP Client
+httpx
+
 # Utilities
 python-dotenv
 python-multipart
