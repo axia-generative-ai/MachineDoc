@@ -2,8 +2,8 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 import json
 from app.core.ai_client import call_ai_server
-from app.crud.crud_error_code import get_error_code_by_name
-from app.crud.crud_search_history import create_search_history
+from app.crud.crud_error_code import error_code_repository
+from app.crud.crud_search_history import search_history_repository
 
 class SearchService:
     async def get_ai_diagnosis(self, db: Session, error_code: str, user_id: int):
@@ -13,7 +13,7 @@ class SearchService:
         raise_exception = False
 
         # 2. error_code 검증 로직
-        db_error = get_error_code_by_name(db, error_code.upper())
+        db_error = error_code_repository.get_error_code_by_name(db, error_code.upper())
         try:
             if not db_error:
                 search_status = "INVALID_CODE"
@@ -33,7 +33,7 @@ class SearchService:
             raise_exception = True # 실패했으므로 최종적으로는 유저에게 에러를 알림. (저장 후 raise 예정)
         finally:
             # 4. 결과와 상관없이 무조건 검색 이력 저장
-            create_search_history(
+            search_history_repository.create_search_history(
                 db, 
                 user_id=user_id, 
                 query=error_code, 

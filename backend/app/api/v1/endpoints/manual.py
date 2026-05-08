@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, UploadFile, File, Form
 from app.service.saved_manual_service import manual_service
 from app.models.user import User
 from sqlalchemy.orm import Session
 from app.api import deps
 from typing import List
-from app.schemas.manual import SearchManual
+from app.schemas.manual import SearchManual, ManualCreate, ManualResponse
 from fastapi.responses import FileResponse
 
 router = APIRouter()
@@ -65,3 +65,42 @@ async def view_manual_file(
     * **다운로드**: HTML의 &lt;a&gt; 태그에 **download** 속성을 부여하여 호출하면 서버에서 설정한 파일명으로 즉시 다운로드됩니다.
     """
     return manual_service.get_manual_file_response(db, manual_id)
+
+@router.post(
+    "/upload", 
+    status_code=201,
+    response_model=ManualResponse,
+    summary="신규 매뉴얼 업로드"
+)
+async def upload_manual(
+    title: str = Form(..., description="매뉴얼의 제목", examples=["2026 스마트팩토리 컨베이어 점검 매뉴얼"]),
+    category: str = Form(..., description="설비 분류 또는 카테고리", examples=["점검"]),
+    version: str = Form(..., description="매뉴얼 버전", examples=["v1.0.2"]),
+    error_codes: List[str] = Form(..., description="매뉴역과 연결될 에러 코드 리스트", examples=[["E0001", "E0023"]]),
+    file: UploadFile = File(..., description="업로드할 PDF 파일"),
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_admin_user)
+):
+    """
+    관리자 권한으로 새로운 PDF 매뉴얼과 관련 에러 코드들을 서버에 등록합니다.
+
+    - **파일 저장**: 서버 내 /static/data 경로에 고유한 파일명으로 저장됩니다.
+    - **에러 코드**: 여러 개의 에러 코드를 리스트 형태로 입력하면 해당 매뉴얼과 자동으로 매핑됩니다.
+    - **권한**: 관리자(Admin) 계정만 호출 가능합니다.
+
+    매뉴얼 업로드 프로세스:
+    1. 파일 시스템에 PDF 저장
+    2. 매뉴얼 메타데이터 저장
+    3. 에러 코드 관계 매핑 저장
+    """
+    # 매뉴얼 기본 정보 DTO 생성
+    manual_in = ManualCreate(title=title, category=category, version=version)
+    
+    # 서비스에 매뉴얼 DTO와 에러 코드 리스트를 각각 전달
+    return await manual_service.upload_manual_process(
+        db, 
+        manual_in=manual_in, 
+        error_codes=error_codes, 
+        file=file, 
+        user_id=current_user.user_id
+    )

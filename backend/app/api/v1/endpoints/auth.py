@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.user import User
-from app.schemas.user import UserCreate, UserRead, UserLoginSchema
-from app.service.user_service import register_new_user
-from app.service.auth_service import authenticate_user, logout_user
+from app.schemas.user import UserCreate, UserLoginSchema, UserRead
+from app.service.user_service import user_service
+from app.service.auth_service import auth_service
 from app.api.deps import get_current_user
 
 from fastapi.security import OAuth2PasswordRequestForm
@@ -28,7 +28,7 @@ def register_user(obj_in: UserCreate, db: Session = Depends(get_db)):
     - **초기 상태(State)**: 가입 시 사용자의 초기 상태는 자동으로 **pending**(승인 대기)으로 설정됩니다. 
     - **승인 절차**: **pending** 상태의 유저는 로그인을 할 수 없으며, 관리자의 승인을 통해 **logout** 상태로 변경된 후 서비스 이용이 가능합니다.
     """
-    return register_new_user(db, obj_in=obj_in)
+    return user_service.register_new_user(db, obj_in=obj_in)
 
 @router.post(
         "/login",
@@ -50,8 +50,8 @@ def login(
     - **logout**: 로그인 가능
     - **login**: 이미 로그인 중 (중복 로그인 차단)
     """
-    # return authenticate_user(db, login_data=login_data)
-    return authenticate_user(db, username=form_data.username, password=form_data.password)
+    # return auth_service.authenticate_user(db, login_data=login_data)
+    return auth_service.authenticate_user(db, username=form_data.username, password=form_data.password)
 
 @router.post("/logout", summary="로그아웃")
 def logout(
@@ -63,4 +63,4 @@ def logout(
     - DB의 사용자 상태를 **logout**으로 변경
     - 저장된 리프레시 토큰 삭제
     """
-    return logout_user(db, user=current_user)
+    return auth_service.logout_user(db, user=current_user)
