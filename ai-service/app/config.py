@@ -50,7 +50,9 @@ class Settings(BaseSettings):
 
     # ---- Server ----
     host: str = "0.0.0.0"
-    port: int = 8000
+    # Port is 8001 to avoid colliding with backend (:8000) when both run
+    # locally / in docker-compose. Locked at the 2026-05-08 integration sync.
+    port: int = 8001
     log_level: str = "INFO"
 
     # ---- Pipeline tuning (used in later phases) ----

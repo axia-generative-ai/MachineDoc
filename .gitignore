@@ -66,3 +66,8 @@ postgres_data/
 # =====================
 *.log
 logs/
+
+# =====================
+# Claude Code workspace state
+# =====================
+.claude/

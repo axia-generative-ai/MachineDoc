@@ -17,8 +17,8 @@ info:
     name: Proprietary
 
 servers:
-  - url: http://localhost:8000
-    description: Local dev
+  - url: http://localhost:8001
+    description: Local dev (port 8001 — backend owns :8000)
 
 tags:
   - name: search

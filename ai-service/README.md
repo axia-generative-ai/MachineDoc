@@ -59,7 +59,7 @@ uv run uvicorn app.main:app --reload
 Then verify:
 
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:8001/health
 # -> {"status":"ok"}
 ```
 
