@@ -10,7 +10,7 @@ export const authScenarios = {
   signup: {
     title: '회원가입',
     eyebrow: 'FACTORYGUARD',
-    description: '기본 정보를 입력해주세요',
+    description: '승인 요청에 필요한 기본 정보를 입력해주세요',
     submitLabel: '회원가입',
     secondaryLabel: '로그인',
     secondaryTo: '/login',

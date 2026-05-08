@@ -1,7 +1,7 @@
 import { ChevronDown } from 'lucide-react';
 
-import { manualSettings } from '../model/adminData';
 import { Panel } from '../../../shared/ui/Panel';
+import { manualSettings } from '../model/adminData';
 
 export function ManualSettingsPanel() {
   return (

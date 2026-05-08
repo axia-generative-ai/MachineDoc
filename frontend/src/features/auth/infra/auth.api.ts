@@ -1,5 +1,6 @@
-import type { LoginCommand, SignupCommand, AuthSession } from '../model/auth.types';
+import type { UserRole, UserState } from '../../../entities/user/model/user.types';
 import { apiClient } from '../../../shared/api/apiClient';
+import type { AuthSession, LoginCommand, SignupCommand } from '../model/auth.types';
 
 type BackendAuthSession = {
   access_token: string;
@@ -10,10 +11,27 @@ type BackendAuthSession = {
     email: string;
     name: string;
     department: string;
-    role: AuthSession['user']['role'];
-    state: NonNullable<AuthSession['user']['state']>;
+    role: string;
+    state: string;
   };
 };
+
+const backendRoleValues: Record<Exclude<UserRole, 'ADMIN'>, string> = {
+  WORKER: '작업자',
+  ENGINEER: '엔지니어',
+};
+
+function normalizeRole(role: string): UserRole {
+  if (role === 'ADMIN' || role.includes('관리')) return 'ADMIN';
+  if (role === 'ENGINEER' || role.includes('엔지니어')) return 'ENGINEER';
+  return 'WORKER';
+}
+
+function normalizeState(state: string): UserState {
+  if (state === 'LOGIN' || state.includes('로그인')) return 'LOGIN';
+  if (state === 'PENDING' || state.includes('승인')) return 'PENDING';
+  return 'LOGOUT';
+}
 
 function mapAuthSession(data: BackendAuthSession): AuthSession {
   return {
@@ -25,8 +43,8 @@ function mapAuthSession(data: BackendAuthSession): AuthSession {
       email: data.user_info.email,
       name: data.user_info.name,
       department: data.user_info.department,
-      role: data.user_info.role,
-      state: data.user_info.state,
+      role: normalizeRole(data.user_info.role),
+      state: normalizeState(data.user_info.state),
     },
   };
 }
@@ -46,7 +64,13 @@ export const authApi = {
     return mapAuthSession(data);
   },
   async signup(command: SignupCommand) {
-    await apiClient.post('/auth/register', command);
+    await apiClient.post('/auth/register', {
+      email: command.email,
+      password: command.password,
+      name: command.name,
+      department: command.department,
+      role: backendRoleValues[command.role],
+    });
   },
   async logout() {
     await apiClient.post('/auth/logout');

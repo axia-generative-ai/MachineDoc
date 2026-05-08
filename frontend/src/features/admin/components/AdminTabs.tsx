@@ -1,10 +1,11 @@
-import { adminTabs } from '../model/adminData';
+import { adminTabs, type AdminTab } from '../model/adminData';
 
 type AdminTabsProps = {
-  activeTab?: string;
+  activeTab: AdminTab;
+  onTabChange: (tab: AdminTab) => void;
 };
 
-export function AdminTabs({ activeTab = '매뉴얼 등록' }: AdminTabsProps) {
+export function AdminTabs({ activeTab, onTabChange }: AdminTabsProps) {
   return (
     <div className="mb-6 overflow-hidden rounded-2xl border border-slate-700/80 bg-slate-950/25">
       <div className="grid grid-cols-2 md:grid-cols-4">
@@ -15,6 +16,7 @@ export function AdminTabs({ activeTab = '매뉴얼 등록' }: AdminTabsProps) {
             <button
               key={tab}
               type="button"
+              onClick={() => onTabChange(tab)}
               className={`relative h-16 text-[19px] font-bold tracking-[-0.04em] transition ${
                 isActive ? 'text-blue-400' : 'text-slate-400 hover:text-slate-200'
               }`}

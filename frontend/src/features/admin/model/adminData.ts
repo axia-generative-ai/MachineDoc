@@ -1,6 +1,7 @@
 import { AlertTriangle, BookOpen, ChevronRight } from 'lucide-react';
 
 export const adminTabs = ['매뉴얼 등록', '오류코드 매핑', '프롬프트 관리', '사용자 승인'] as const;
+export type AdminTab = (typeof adminTabs)[number];
 
 export const manualSettings = {
   manualName: 'Valve Manual',

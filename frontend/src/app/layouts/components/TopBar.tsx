@@ -1,20 +1,71 @@
-import { Menu, Search, User } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { ChevronDown, LogOut, Menu, Search, User } from 'lucide-react';
 
+import { useAuthSession } from '../../../features/auth/hooks/useAuthSession';
+import { useLogout } from '../../../features/auth/hooks/useLogout';
 import { NotificationBellButton } from '../../../features/notification/components/NotificationBellButton';
+import type { UserRole } from '../../../entities/user/model/user.types';
 
 type TopBarProps = {
   isSidebarOpen: boolean;
   onMenuClick: () => void;
 };
 
+const roleLabels: Record<UserRole, string> = {
+  ADMIN: '관리자',
+  WORKER: '작업자',
+  ENGINEER: '엔지니어',
+};
+
+function getRoleLabel(role?: UserRole) {
+  if (!role) return '작업자';
+  return roleLabels[role] ?? '작업자';
+}
+
 export function TopBar({ isSidebarOpen, onMenuClick }: TopBarProps) {
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuthSession();
+  const { logout, isLoading } = useLogout();
+  const userRoleLabel = getRoleLabel(user?.role);
+  const userName = user?.name ?? '남궁현';
+  const userDisplayName = `${userRoleLabel} ${userName}`;
+
+  useEffect(() => {
+    if (!isUserMenuOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isUserMenuOpen]);
+
+  const handleLogout = async () => {
+    setIsUserMenuOpen(false);
+    await logout();
+  };
+
   return (
     <header
       className={`fixed left-0 right-0 top-0 z-10 flex h-[78px] items-center border-b border-slate-800/90 bg-[#071018]/80 px-5 backdrop-blur-xl transition-[left] duration-300 ease-out lg:px-8 ${
         isSidebarOpen ? 'lg:left-[252px]' : 'lg:left-0'
       }`}
     >
-      {/* 버튼은 클릭만 상위로 전달하고, 실제 사이드바 열림 여부는 MainLayout에서 결정합니다. */}
       <button
         type="button"
         onClick={onMenuClick}
@@ -38,10 +89,42 @@ export function TopBar({ isSidebarOpen, onMenuClick }: TopBarProps) {
           온라인
         </span>
         <span className="h-8 w-px bg-slate-700" />
-        <span className="flex items-center gap-2">
-          <User className="h-7 w-7 text-slate-300" />
-          작업자 남궁현
-        </span>
+
+        <div ref={userMenuRef} className="relative">
+          <button
+            type="button"
+            onClick={() => setIsUserMenuOpen((prev) => !prev)}
+            className="flex items-center gap-2 rounded-xl px-3 py-2 text-slate-100 transition hover:bg-white/[0.04] hover:text-blue-300"
+            aria-haspopup="menu"
+            aria-expanded={isUserMenuOpen}
+          >
+            <User className="h-7 w-7 text-slate-300" />
+            <span>{userDisplayName}</span>
+            <ChevronDown className={`h-5 w-5 text-slate-400 transition ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {isUserMenuOpen && (
+            <div className="absolute right-0 top-[52px] w-60 overflow-hidden rounded-2xl border border-slate-700/80 bg-[#08131f]/95 p-2 shadow-[0_22px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+              <div className="border-b border-slate-700/70 px-3 py-3">
+                <p className="text-sm font-bold text-slate-100">{userDisplayName}</p>
+                <p className="mt-1 truncate text-xs font-medium text-slate-500">
+                  {user?.email ?? 'FactoryGuard Operator'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                disabled={isLoading}
+                className="mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-bold text-red-300 transition hover:bg-red-500/10 hover:text-red-200 disabled:cursor-not-allowed disabled:text-slate-500"
+                role="menuitem"
+              >
+                <LogOut className="h-5 w-5" />
+                {isLoading ? '로그아웃 중...' : '로그아웃'}
+              </button>
+            </div>
+          )}
+        </div>
+
         <span className="h-8 w-px bg-slate-700" />
         <NotificationBellButton />
       </div>

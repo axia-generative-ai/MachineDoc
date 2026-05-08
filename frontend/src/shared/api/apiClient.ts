@@ -3,6 +3,22 @@ import { env } from '../config/env';
 import { authTokenStorage } from '../storage/authToken.storage';
 import { ApiError } from './apiError';
 
+type ErrorResponse = {
+  message?: string;
+  detail?: string | { msg?: string } | Array<{ msg?: string }>;
+};
+
+function getErrorMessage(error: AxiosError<ErrorResponse>) {
+  const data = error.response?.data;
+
+  if (data?.message) return data.message;
+  if (typeof data?.detail === 'string') return data.detail;
+  if (Array.isArray(data?.detail)) return data.detail[0]?.msg ?? error.message;
+  if (data?.detail?.msg) return data.detail.msg;
+
+  return error.message;
+}
+
 export const apiClient = axios.create({
   baseURL: env.apiBaseUrl,
   headers: {
@@ -23,9 +39,9 @@ apiClient.interceptors.request.use((config) => {
 
 apiClient.interceptors.response.use(
   (response) => response,
-  (error: AxiosError<{ message?: string }>) => {
+  (error: AxiosError<ErrorResponse>) => {
     const status = error.response?.status;
-    const message = error.response?.data?.message ?? error.message;
+    const message = getErrorMessage(error);
 
     return Promise.reject(new ApiError(message, status));
   },
