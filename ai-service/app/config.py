@@ -15,6 +15,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 LLMProvider = Literal["ollama", "openai"]
 EmbeddingProvider = Literal["ollama", "openai"]
+ChunkingStrategy = Literal["v1", "v2"]
+PipelineVersion = Literal["v1", "v2"]
 
 
 class Settings(BaseSettings):
@@ -34,7 +36,11 @@ class Settings(BaseSettings):
 
     # ---- Embeddings ----
     embedding_provider: EmbeddingProvider = "ollama"
-    embedding_model: str = "bge-m3"
+    # nomic-embed-text replaced bge-m3 after a reproducible Ollama NaN
+    # failure on plain English input ("failed to encode response: json:
+    # unsupported value: NaN" / status 500). Override via EMBEDDING_MODEL
+    # env var if a future bge-m3 build fixes this.
+    embedding_model: str = "nomic-embed-text"
     openai_embedding_model: str = "text-embedding-3-small"
 
     # ---- Database ----
@@ -44,7 +50,9 @@ class Settings(BaseSettings):
 
     # ---- Server ----
     host: str = "0.0.0.0"
-    port: int = 8000
+    # Port is 8001 to avoid colliding with backend (:8000) when both run
+    # locally / in docker-compose. Locked at the 2026-05-08 integration sync.
+    port: int = 8001
     log_level: str = "INFO"
 
     # ---- Pipeline tuning (used in later phases) ----
@@ -52,6 +60,21 @@ class Settings(BaseSettings):
     chunk_overlap: int = Field(default=100, ge=0)
     retrieval_top_k: int = Field(default=3, ge=1)
     similarity_threshold: float = Field(default=0.3, ge=0.0, le=1.0)
+
+    # ---- Phase 6: structure-aware chunking + hybrid retrieval ----
+    chunking_strategy: ChunkingStrategy = "v1"
+    v2_child_size: int = Field(default=600, ge=100)
+    v2_child_overlap: int = Field(default=80, ge=0)
+
+    # ---- Phase 6 wiring: which RAG pipeline serves /api/v1/search ----
+    # "v1" → legacy RagPipeline (vector-only similarity search, ABB-style
+    #        synthetic eval set tuning).
+    # "v2" → RagPipelineV2 (HybridRetriever with BM25 + vector + RRF +
+    #        bge-reranker-base, real-manual eval Top-3 92%).
+    pipeline_version: PipelineVersion = "v1"
+    # When pipeline_version="v2", these tune HybridRetriever.
+    v2_candidate_k: int = Field(default=20, ge=3)
+    v2_final_k: int = Field(default=3, ge=1)
 
 
 @lru_cache(maxsize=1)
