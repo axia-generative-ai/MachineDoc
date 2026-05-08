@@ -1,5 +1,5 @@
-import { searchGuideCards } from '../model/errorSearchHomeData';
-import { Panel } from '../../../shared/ui/Panel';
+﻿import { searchGuideCards } from '../../model/errorSearchHomeData';
+import { Panel } from '../../../../shared/ui/Panel';
 
 export function SearchGuideGrid() {
   return (
@@ -20,3 +20,4 @@ export function SearchGuideGrid() {
     </div>
   );
 }
+

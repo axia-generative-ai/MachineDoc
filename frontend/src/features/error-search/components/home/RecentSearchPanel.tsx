@@ -1,7 +1,7 @@
-import { Clock3 } from 'lucide-react';
+﻿import { Clock3 } from 'lucide-react';
 
-import { recentSearches } from '../model/errorSearchHomeData';
-import { Panel } from '../../../shared/ui/Panel';
+import { recentSearches } from '../../model/errorSearchHomeData';
+import { Panel } from '../../../../shared/ui/Panel';
 
 export function RecentSearchPanel() {
   return (
@@ -22,3 +22,4 @@ export function RecentSearchPanel() {
     </Panel>
   );
 }
+

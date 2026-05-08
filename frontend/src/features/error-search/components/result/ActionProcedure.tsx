@@ -1,5 +1,5 @@
-import { actionSteps } from '../model/errorSearchData';
-import { Panel } from '../../../shared/ui/Panel';
+﻿import { actionSteps } from '../../model/errorSearchData';
+import { Panel } from '../../../../shared/ui/Panel';
 
 export function ActionProcedure() {
   return (
@@ -26,3 +26,4 @@ export function ActionProcedure() {
     </Panel>
   );
 }
+

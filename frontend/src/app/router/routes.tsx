@@ -9,6 +9,7 @@ import { ErrorSearchPage } from '../../pages/ErrorSearchPage/ErrorSearchPage';
 import { ErrorSearchResultPage } from '../../pages/ErrorSearchResultPage/ErrorSearchResultPage';
 import { LoginPage } from '../../pages/LoginPage/LoginPage';
 import { NewPage } from '../../pages/NewPage/NewPage';
+import { SearchHistoryPage } from '../../pages/SearchHistoryPage/SearchHistoryPage';
 import { SignupPage } from '../../pages/SignupPage/SignupPage';
 
 export const routes = createBrowserRouter([
@@ -24,6 +25,7 @@ export const routes = createBrowserRouter([
       { path: 'error-search/result', element: <ErrorSearchResultPage /> },
       { path: 'detection', element: <DetectionPage /> },
       { path: 'alert-log', element: <AlertLogPage /> },
+      { path: 'search-history', element: <SearchHistoryPage /> },
       { path: 'admin', element: <AdminPage /> },
       { path: 'new', element: <NewPage /> },
     ],

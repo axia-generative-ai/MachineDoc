@@ -1,9 +1,9 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import { quickSearchTags } from '../model/errorSearchHomeData';
-import { Panel } from '../../../shared/ui/Panel';
+import { quickSearchTags } from '../../model/errorSearchHomeData';
+import { Panel } from '../../../../shared/ui/Panel';
 
 export function SearchHero() {
   const navigate = useNavigate();
@@ -11,7 +11,7 @@ export function SearchHero() {
   const [hasSearchError, setHasSearchError] = useState(false);
 
   const handleSearch = () => {
-    const nextKeyword = keyword.trim();
+    const nextKeyword = keyword.trim().toUpperCase();
     if (!nextKeyword) {
       setHasSearchError(true);
       return;
@@ -29,8 +29,8 @@ export function SearchHero() {
     <Panel className="p-7">
       <div className="mx-auto max-w-[980px] text-center">
         <p className="mb-3 text-[18px] font-bold tracking-[-0.04em] text-blue-400">ERROR MANUAL SEARCH</p>
-        <h1 className="text-[44px] font-black tracking-[-0.07em] text-white">오류코드 또는 설비명을 검색하세요</h1>
-        <p className="mt-4 text-[19px] font-semibold tracking-[-0.04em] text-slate-400">
+        <h1 className="text-[36px] font-black tracking-[-0.07em] text-white md:text-[44px]">오류코드 또는 설비명을 검색하세요</h1>
+        <p className="mt-4 text-[17px] font-semibold tracking-[-0.04em] text-slate-400 md:text-[19px]">
           입력한 키워드를 기준으로 관련 매뉴얼, 원인, 조치 절차를 빠르게 확인합니다.
         </p>
 
@@ -55,13 +55,13 @@ export function SearchHero() {
                 handleSearch();
               }
             }}
-            className="h-full flex-1 bg-transparent text-left text-[24px] font-semibold text-white outline-none placeholder:text-slate-500"
+            className="h-full min-w-0 flex-1 bg-transparent text-left text-[20px] font-semibold text-white outline-none placeholder:text-slate-500 md:text-[24px]"
             placeholder="예: E-204, 밸브 온도 상승, M-102"
           />
           <button
             type="button"
             onClick={handleSearch}
-            className="h-12 rounded-xl bg-blue-600 px-8 text-[18px] font-black text-white shadow-[0_0_24px_rgba(37,99,235,0.4)] transition hover:bg-blue-500"
+            className="h-12 rounded-xl bg-blue-600 px-6 text-[17px] font-black text-white shadow-[0_0_24px_rgba(37,99,235,0.4)] transition hover:bg-blue-500 md:px-8 md:text-[18px]"
           >
             검색
           </button>

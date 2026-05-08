@@ -1,4 +1,4 @@
-import { relatedManuals } from '../model/errorSearchData';
+﻿import { relatedManuals } from '../../model/errorSearchData';
 import { RelatedManualCard } from './RelatedManualCard';
 
 export function RelatedManualList() {
@@ -10,3 +10,6 @@ export function RelatedManualList() {
     </div>
   );
 }
+
+
+

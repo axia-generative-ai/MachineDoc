@@ -31,7 +31,6 @@ const groupedItems: SidebarGroup[] = [
   {
     title: 'MONITOR',
     items: [
-      { to: '/alert-log', label: '실시간 알림', icon: Bell },
       { to: '/alert-log', label: '알림 로그', icon: FileText },
     ],
   },
