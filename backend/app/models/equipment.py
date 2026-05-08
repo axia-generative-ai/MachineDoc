@@ -31,3 +31,4 @@ class Equipment(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     logs = relationship("EquipmentLog", back_populates="equipment", cascade="all, delete-orphan")
+    thresholds = relationship("EquipmentThreshold", back_populates="equipment", cascade="all, delete-orphan")
