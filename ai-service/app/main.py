@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 import logging
-import os
 
 from fastapi import FastAPI
 
 from app.api.anomaly import router as anomaly_router
 from app.api.search import router as search_router
+from app.config import get_settings
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
+logging.basicConfig(level=get_settings().log_level)
 
 app = FastAPI(
     title="FactoryGuard AI Service",
@@ -47,10 +47,11 @@ def health() -> dict[str, str]:
 def main() -> None:
     import uvicorn
 
+    settings = get_settings()
     uvicorn.run(
         "app.main:app",
-        host=os.getenv("HOST", "0.0.0.0"),
-        port=int(os.getenv("PORT", "8000")),
+        host=settings.host,
+        port=settings.port,
         reload=False,
     )
 
