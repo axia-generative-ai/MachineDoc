@@ -24,6 +24,7 @@ dependencies = [
     "pgvector>=0.3.0",
     "sqlalchemy>=2.0.30",
     "tenacity>=9.0.0",
+    "sentence-transformers>=5.4.1",
 ]
 
 [project.optional-dependencies]
