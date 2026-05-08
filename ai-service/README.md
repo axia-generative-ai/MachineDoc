@@ -45,7 +45,13 @@ uv sync
 
 ### 2. 환경변수 설정
 
-`.env` 파일 작성 (gitignored, 저장소엔 `.env.example`이 없으므로 아래 예시를 그대로 복사):
+`.env.example`을 복사해서 `.env` 만들기 (`.env`는 gitignored):
+
+```bash
+cp .env.example .env
+```
+
+기본값은 로컬 개발용(Ollama + compose db)으로 설정되어 있어 별도 수정 없이 동작합니다. 참고용 핵심 키:
 
 ```env
 # Provider 선택 (둘 다 ollama가 로컬 개발 기본값)
@@ -70,7 +76,7 @@ PIPELINE_VERSION=v2
 CHUNKING_STRATEGY=v2
 ```
 
-> ⚠️ `app/config.py`의 default 값은 일부 항목(`OLLAMA_MODEL=qwen3.5:9b`, `PIPELINE_VERSION=v1` 등)이 stale합니다. `.env`로 명시 override하는 운영 패턴을 따르세요.
+> 운영 기본값은 `app/config.py`와 `.env.example`에 정의되어 있습니다. 둘 다 동일하게 운영 기본값을 따릅니다 (qwen2.5:3b / nomic-embed-text / compose db / v2 파이프라인).
 
 ### 3. 외부 런타임 가동
 
