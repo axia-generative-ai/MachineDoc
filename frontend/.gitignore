@@ -56,13 +56,13 @@ desktop.ini
 # =====================
 # AI / Data
 # =====================
+ai-service/data/chroma_db/
 *.sqlite3
 *.db
-.manuals/
-postgres_data/
 
 # =====================
 # Logs
 # =====================
 *.log
 logs/
+postgres_data/
