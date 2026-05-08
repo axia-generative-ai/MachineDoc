@@ -12,10 +12,10 @@ Differs from `rag.py` (v1) in three ways:
    guaranteed regardless of LLM whim — fixed sections, numbered steps,
    manual citations.
 
-Status: skeleton. `parent_loader` and the rule-based post-processor are
-stubbed; LLM call mirrors v1's `/no_think` quirk for qwen3.5:9b. Wired
-under a feature flag in the API layer (default off) until v2 retrieval
-hits parity with v1 on the synthetic eval set.
+Production pipeline since 2026-05. LLM call mirrors v1's `/no_think`
+quirk for the qwen3 family (currently qwen2.5:3b in dev, but the
+prefix is required whenever the model is qwen3.x — see
+project_qwen3_no_think memory).
 """
 
 from __future__ import annotations
@@ -54,7 +54,7 @@ _NO_THINK = SystemMessage(content="/no_think")
 # parse time. Reviewer feedback: real industrial responses must be in
 # Korean regardless of source manual language.
 #
-# Style decisions to keep qwen3.5:9b honest:
+# Style decisions to keep small Ollama models (qwen2.5:3b / qwen3.5:9b) honest:
 #   - No `<placeholder>` tokens in the skeleton — the model copies them
 #     verbatim into output. Use plain instructions instead.
 #   - Per-step source format is shown as a literal example so the model
@@ -136,8 +136,8 @@ class KoreanResponseRules:
     """Post-process the LLM raw output into a guaranteed structure.
 
     Runs purely on regex/string ops (no LLM calls) so it does not
-    affect P95 latency. Cleans the typical qwen3.5:9b failure modes
-    observed during AI-24:
+    affect P95 latency. Cleans the typical failure modes observed
+    on small Ollama models (qwen2.5:3b / qwen3.5:9b) during AI-24:
 
     1. Placeholder leak — `<한 문단>`, `<조치>`, `<매뉴얼>`, `<페이지>`,
        trailing `...` from the prompt skeleton get copied verbatim.
