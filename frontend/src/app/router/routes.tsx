@@ -26,6 +26,8 @@ export const routes = createBrowserRouter([
       { path: 'detection', element: <DetectionPage /> },
       { path: 'alert-log', element: <AlertLogPage /> },
       { path: 'search-history', element: <SearchHistoryPage /> },
+      { path: 'action-history', element: <SearchHistoryPage /> },
+      { path: 'saved-documents', element: <SearchHistoryPage /> },
       { path: 'admin', element: <AdminPage /> },
       { path: 'new', element: <NewPage /> },
     ],
