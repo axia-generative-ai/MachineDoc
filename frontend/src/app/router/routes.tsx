@@ -8,7 +8,6 @@ import { DetectionPage } from '../../pages/DetectionPage/DetectionPage';
 import { ErrorSearchPage } from '../../pages/ErrorSearchPage/ErrorSearchPage';
 import { ErrorSearchResultPage } from '../../pages/ErrorSearchResultPage/ErrorSearchResultPage';
 import { LoginPage } from '../../pages/LoginPage/LoginPage';
-import { NewPage } from '../../pages/NewPage/NewPage';
 import { SearchHistoryPage } from '../../pages/SearchHistoryPage/SearchHistoryPage';
 import { SignupPage } from '../../pages/SignupPage/SignupPage';
 
@@ -29,7 +28,6 @@ export const routes = createBrowserRouter([
       { path: 'action-history', element: <SearchHistoryPage /> },
       { path: 'saved-documents', element: <SearchHistoryPage /> },
       { path: 'admin', element: <AdminPage /> },
-      { path: 'new', element: <NewPage /> },
     ],
   },
 ]);

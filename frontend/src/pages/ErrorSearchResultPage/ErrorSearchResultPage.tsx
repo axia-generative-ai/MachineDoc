@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { ClipboardCheck } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
 import {
@@ -10,47 +11,14 @@ import {
   ManualPreview,
   RelatedManualList,
 } from '../../features/error-search/components';
+import { ActionLogModal } from '../../features/error-search/components/result/ActionLogModal';
 import { useErrorCodeSearch } from '../../features/error-search/hooks/useErrorCodeSearch';
-import { manualApi, type ManualSummary } from '../../features/error-search/infra/manual.api';
 
 export function ErrorSearchResultPage() {
   const [searchParams] = useSearchParams();
   const keyword = searchParams.get('q') || '';
   const { result, isLoading, errorMessage, refetch } = useErrorCodeSearch(keyword);
-  const [manuals, setManuals] = useState<ManualSummary[]>([]);
-  const [selectedManual, setSelectedManual] = useState<ManualSummary | null>(null);
-  const [manualsLoading, setManualsLoading] = useState(false);
-  const [manualsErrorMessage, setManualsErrorMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    let isActive = true;
-
-    setManualsLoading(true);
-    setManualsErrorMessage(null);
-
-    manualApi
-      .searchManuals()
-      .then((nextManuals) => {
-        if (!isActive) return;
-
-        setManuals(nextManuals);
-        setSelectedManual(nextManuals[0] ?? null);
-      })
-      .catch((error: Error) => {
-        if (isActive) {
-          setManualsErrorMessage(error.message || '관련 매뉴얼을 불러오지 못했습니다.');
-        }
-      })
-      .finally(() => {
-        if (isActive) {
-          setManualsLoading(false);
-        }
-      });
-
-    return () => {
-      isActive = false;
-    };
-  }, []);
+  const [isActionModalOpen, setIsActionModalOpen] = useState(false);
 
   if (isLoading) {
     return <ErrorSearchLoading />;
@@ -60,25 +28,43 @@ export function ErrorSearchResultPage() {
     return <ErrorSearchFailure message={errorMessage} onRetry={refetch} />;
   }
 
+  const canRecordAction = !!(result && result.historyId !== null);
+
   return (
     <div className="mx-auto max-w-[1640px]">
       <ErrorSearchHeader />
       {result && <ErrorSearchAiSummary result={result} />}
 
       <div className="grid gap-6 lg:grid-cols-12">
-        <ManualPreview manual={selectedManual} />
-        <ActionProcedure />
+        <ManualPreview result={result} />
+        <ActionProcedure result={result} />
       </div>
 
       <div className="mt-7">
-        <RelatedManualList
-          manuals={manuals}
-          selectedManualId={selectedManual?.manual_id}
-          isLoading={manualsLoading}
-          errorMessage={manualsErrorMessage}
-          onSelect={setSelectedManual}
-        />
+        <RelatedManualList />
       </div>
+
+      {canRecordAction && (
+        <div className="mt-8 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setIsActionModalOpen(true)}
+            className="inline-flex h-12 items-center gap-2 rounded-xl bg-blue-600 px-6 text-[16px] font-black text-white shadow-[0_0_24px_rgba(37,99,235,0.35)] transition hover:bg-blue-500"
+          >
+            <ClipboardCheck className="h-5 w-5" />
+            조치 결과 입력
+          </button>
+        </div>
+      )}
+
+      {result && result.historyId !== null && (
+        <ActionLogModal
+          historyId={result.historyId}
+          query={result.keyword}
+          open={isActionModalOpen}
+          onClose={() => setIsActionModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

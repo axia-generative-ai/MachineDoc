@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { CheckCircle2, Loader2, Upload } from 'lucide-react';
 
 import { Panel } from '../../../shared/ui/Panel';
-import { manualSettings } from '../model/adminData';
 
 const CATEGORY_OPTIONS = ['점검', '수리', '운전', '안전', '교체'] as const;
 

@@ -22,12 +22,6 @@ function normalizeState(state: string): UserState {
   return 'LOGOUT';
 }
 
-const ROLE_TO_BACKEND: Record<UserRole, string> = {
-  ADMIN: '관리자',
-  ENGINEER: '엔지니어',
-  WORKER: '작업자',
-};
-
 function mapUser(user: BackendUser): User {
   return {
     id: String(user.user_id),
@@ -45,7 +39,7 @@ export const adminUserApi = {
     return data.map(mapUser);
   },
   async getAllUsers() {
-    const { data } = await apiClient.get<BackendUser[]>('/users/');
+    const { data } = await apiClient.get<BackendUser[]>('/users/', { params: { limit: 100 } });
     return data.map(mapUser);
   },
   async approveUser(userId: string) {
@@ -55,9 +49,12 @@ export const adminUserApi = {
     return mapUser(data);
   },
   async updateUserRole(userId: string, role: UserRole) {
-    const { data } = await apiClient.patch<BackendUser>(`/users/${userId}`, {
-      role: ROLE_TO_BACKEND[role],
-    });
+    const koMap: Record<UserRole, string> = {
+      ADMIN: '관리자',
+      ENGINEER: '엔지니어',
+      WORKER: '작업자',
+    };
+    const { data } = await apiClient.patch<BackendUser>(`/users/${userId}`, { role: koMap[role] });
     return mapUser(data);
   },
   async deleteUser(userId: string) {

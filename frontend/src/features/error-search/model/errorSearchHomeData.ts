@@ -22,17 +22,3 @@ export const searchGuideCards = [
     icon: Clock3,
   },
 ] as const;
-
-export type RecentSearchItem = {
-  keyword: string;
-  time: string;
-};
-
-export const recentSearches: RecentSearchItem[] = [
-  { keyword: 'E-204', time: '방금 전' },
-  { keyword: 'F081', time: '5분 전' },
-  { keyword: 'M-101', time: '20분 전' },
-  { keyword: 'ALM197', time: '1시간 전' },
-];
-
-export const quickSearchTags: string[] = ['E-204', 'F081', 'OPE03', 'M-101', 'ALM197'];
