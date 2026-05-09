@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from app.models.notification import ReadStatus, NotificationLevel
@@ -20,5 +21,6 @@ class NotificationResponse(BaseModel):
     equipment_id: int
     equipment_code: str
     location: str
+    suggested_error_code: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)

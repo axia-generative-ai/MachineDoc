@@ -1,10 +1,12 @@
 import os
+import re
 import shutil
+import httpx
 from uuid import uuid4
 from fastapi import HTTPException
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
-from app.core.ai_client import call_ai_server
+from app.core.ai_client import call_ai_server, AI_SERVER_URL
 from app.crud.crud_saved_manual import manual_repository
 from fastapi.responses import FileResponse
 from app.core.config import config
@@ -12,46 +14,53 @@ from app.schemas.manual import ManualCreate, ManualCreateInternal
 from app.crud.crud_error_code import error_code_repository
 from typing import List
 
-class ManualService:
-    async def get_equipment_manual(self, db, equipment_code, category):
-        manuals = []
-        source = "database"
 
-        # 1. 카테고리가 입력되었을 때만 DB 조회 실행
+def _slugify(text: str) -> str:
+    """ai-service manual_id/equipment_id 슬러그 생성: 영숫자+_- 만 허용, 소문자."""
+    s = re.sub(r"[^A-Za-z0-9가-힣]+", "_", text or "").strip("_").lower()
+    return s or "manual"
+
+class ManualService:
+    def list_error_code_mappings(self, db):
+        """error_code × saved_manual join → ErrorCodeMapping list."""
+        from app.models.error_code import ErrorCode
+        from app.models.saved_manual import SavedManual
+        rows = (
+            db.query(
+                ErrorCode.error_code_id,
+                ErrorCode.code_name,
+                SavedManual.manual_id,
+                SavedManual.title.label("manual_title"),
+                SavedManual.category,
+                SavedManual.version,
+            )
+            .join(SavedManual, SavedManual.manual_id == ErrorCode.manual_id)
+            .order_by(ErrorCode.code_name)
+            .all()
+        )
+        return [
+            {
+                "error_code_id": row.error_code_id,
+                "code_name": row.code_name,
+                "manual_id": row.manual_id,
+                "manual_title": row.manual_title,
+                "category": row.category,
+                "version": row.version,
+            }
+            for row in rows
+        ]
+
+    async def get_equipment_manual(self, db, equipment_code, category):
+        # 카테고리 우선 조회. 카테고리 미지정 시 전체 매뉴얼 반환.
         if category:
             manuals = manual_repository.get_manuals_by_category(db, category=category)
-        
-        # 2. 결과가 빈 리스트이거나 카테고리가 없는 경우 AI 서버로 전환
-        if not manuals:
-            source = "ai_recommendation"
-            try:
-                # AI 서버에는 설비명과 카테고리를 모두 전달하여 최적의 추천을 받음
-                ai_payload = {
-                    "request_type": "manual_search",
-                    "equipment_code": equipment_code,
-                    "category": category
-                }
-                ai_response = await call_ai_server(ai_payload)
-                
-                # AI 결과를 manuals 포맷에 맞춰 리턴 (구조는 AI 서버 응답에 따라 조정)
-                return {
-                    "source": source,
-                    "query_info": {"equipment": equipment_code, "category": category},
-                    "data": ai_response
-                }
-                
-            except Exception as e:
-                # AI 서버도 응답하지 못할 경우
-                raise HTTPException(
-                    status_code=503, 
-                    detail="매뉴얼을 찾을 수 없으며, 추천 서버와의 통신에 실패했습니다."
-                )
+        else:
+            manuals = manual_repository.get_all_manuals(db) if hasattr(manual_repository, "get_all_manuals") else []
 
-        # 3. DB에 데이터가 있는 경우 결과 반환
-        return {
-            "source": source,
-            "data": manuals
-        }
+        return {"source": "database", "data": manuals}
+
+    def list_my_manuals(self, db, user_id: int):
+        return manual_repository.get_manuals_by_user(db, user_id=user_id)
     
     def get_manual_file_response(self, db, manual_id):
         # 1. DB에서 매뉴얼 정보 조회
@@ -75,63 +84,112 @@ class ManualService:
         )
     
     async def upload_manual_process(
-        self, 
-        db: Session, 
-        manual_in: ManualCreate, 
-        error_codes: List[str], 
-        file: UploadFile, 
+        self,
+        db: Session,
+        manual_in: ManualCreate,
+        error_codes: List[str],
+        file: UploadFile,
         user_id: int
     ):
-        # 1. 파일 저장 경로 설정 및 물리적 저장
-        # 컨테이너 내부 경로 기준입니다.
-        upload_dir = "/code/static/data"
+        # 1. 파일 저장 경로: config.MANUAL_URL이 가리키는 디렉토리에 저장
+        # file_url 컬럼에는 파일명만 저장 (get_manual_file_response가 MANUAL_URL + file_url로 조합)
+        upload_dir = config.MANUAL_URL
         os.makedirs(upload_dir, exist_ok=True)
-        
-        file_extension = os.path.splitext(file.filename)[1]
+
+        original_filename = file.filename or "manual.pdf"
+        file_extension = os.path.splitext(original_filename)[1] or ".pdf"
         safe_filename = f"{uuid4()}{file_extension}"
         file_path = os.path.join(upload_dir, safe_filename)
 
         try:
-            # 실제 파일 저장 (I/O)
             with open(file_path, "wb") as buffer:
                 shutil.copyfileobj(file.file, buffer)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"서버에 파일을 저장하는 중 오류가 발생했습니다: {str(e)}")
 
-        # 2. DB 트랜잭션 시작
+        # 2. DB INSERT (saved_manual + 사용자가 직접 입력한 error_codes)
         try:
-            # 내부용 DTO 생성 (manual_in 데이터 + 서버 생성 데이터)
             manual_internal = ManualCreateInternal(
                 **manual_in.model_dump(),
                 user_id=user_id,
-                file_url=file_path
+                file_url=safe_filename
             )
-
-            # [Step A] 매뉴얼 메타데이터 저장 (ManualRepo)
             new_manual = manual_repository.create(db, manual_internal)
 
-            # [Step B] 에러 코드 리스트 저장 (ErrorCodeRepo)
             if error_codes:
                 error_code_repository.create_multiple(
-                    db, 
-                    manual_id=new_manual.manual_id, 
-                    codes=error_codes
+                    db,
+                    manual_id=new_manual.manual_id,
+                    codes=error_codes,
                 )
 
-            # 모든 작업이 성공하면 DB에 최종 반영
             db.commit()
             db.refresh(new_manual)
-            
-            return new_manual
-
         except Exception as e:
-            # DB 작업 중 하나라도 실패하면 롤백 (원자성 보장)
             db.rollback()
-            
-            # DB 저장에 실패했으므로 이미 저장된 물리 파일도 삭제하여 찌꺼기를 남기지 않음
             if os.path.exists(file_path):
                 os.remove(file_path)
-                
             raise HTTPException(status_code=500, detail=f"데이터베이스 기록 중 오류가 발생했습니다: {str(e)}")
+
+        # 3. ai-service로 PDF forward → 청킹/임베딩/색인 (동기, 600초 timeout)
+        # ai-service 응답의 error_codes[]를 backend `error_code` 테이블에 추가 sync
+        # (사용자 입력 코드와 중복 시 skip)
+        ai_manual_slug = _slugify(f"manual_{new_manual.manual_id}_{manual_in.title}")[:80]
+        ai_equipment_slug = _slugify(f"eq_{manual_in.category}")[:80]
+
+        existing_codes = {c for c in (error_codes or [])}
+        ai_status = "skipped"
+        ai_error_codes: List[str] = []
+        ai_elapsed_s = 0.0
+        ingest_warning: str | None = None
+
+        try:
+            with open(file_path, "rb") as fp:
+                files = {"file": (original_filename, fp.read(), "application/pdf")}
+            data = {
+                "manual_id": ai_manual_slug,
+                "equipment_id": ai_equipment_slug,
+            }
+            ingest_url = f"{AI_SERVER_URL.rstrip('/')}/api/v1/ingest"
+            async with httpx.AsyncClient(timeout=600.0) as client:
+                resp = await client.post(ingest_url, files=files, data=data)
+                resp.raise_for_status()
+                ingest_result = resp.json()
+
+            ai_error_codes = ingest_result.get("error_codes") or []
+            ai_elapsed_s = float(ingest_result.get("elapsed_s") or 0.0)
+            ai_status = "indexed"
+
+            # ai-service가 자동 추출한 코드 중 사용자가 입력하지 않은 것만 추가
+            new_codes = [code for code in ai_error_codes if code and code not in existing_codes]
+            if new_codes:
+                error_code_repository.create_multiple(
+                    db,
+                    manual_id=new_manual.manual_id,
+                    codes=new_codes,
+                )
+                db.commit()
+                db.refresh(new_manual)
+        except httpx.HTTPStatusError as e:
+            ingest_warning = f"ai-service ingest 응답 오류({e.response.status_code}): {e.response.text[:200]}"
+            ai_status = "failed"
+        except httpx.RequestError as e:
+            ingest_warning = f"ai-service 연결 실패: {e}"
+            ai_status = "failed"
+        except Exception as e:  # noqa: BLE001
+            ingest_warning = f"ingest 처리 중 예외: {e}"
+            ai_status = "failed"
+
+        # 4. 응답 (ManualResponse 스키마 호환 + 부가 정보)
+        message = "매뉴얼이 성공적으로 업로드되었습니다."
+        if ai_status == "indexed":
+            message += f" (색인 완료, {ai_elapsed_s:.1f}s, 자동 추출 코드 {len(ai_error_codes)}개)"
+        elif ai_status == "failed":
+            message += f" (단, AI 색인 실패: {ingest_warning})"
+        return {
+            "manual_id": new_manual.manual_id,
+            "title": new_manual.title,
+            "message": message,
+        }
 
 manual_service = ManualService()

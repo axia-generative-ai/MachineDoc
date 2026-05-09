@@ -1,17 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException
-from app.models.user import User
 from sqlalchemy.orm import Session
+
 from app.api import deps
 from app.db.session import get_db
-from app.service.log_generator_service import log_generator_service
+from app.models.user import User
 from app.schemas.log import EquipmentLogResponse
+from app.service.log_generator_service import log_generator_service
 
 router = APIRouter()
 
+
 @router.post(
-    "/virtual/{equipment_name}", 
+    "/virtual/{equipment_name}",
     response_model=EquipmentLogResponse,
-    summary="가상 로그 생성 및 분석",
+    summary="가상 로그 생성",
     responses={
         200: {"description": "로그 생성 성공 (이상 징후 발생 시 웹소켓 알림 동시 발송)"},
         401: {"description": "인증되지 않은 사용자 (로그인 필요)"},
@@ -20,7 +22,7 @@ router = APIRouter()
     }
 )
 async def create_virtual_log(
-    equipment_name: str, 
+    equipment_name: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(deps.get_current_user)
 ):
@@ -39,19 +41,26 @@ async def create_virtual_log(
     ### 🔍 주요 기능
     1. **데이터 생성**: 온도(20~110°C) 또는 진동(100~1300Hz) 데이터를 무작위로 생성합니다.
     2. **상태 판별**: 해당 설비에 설정된 임계값(Threshold)을 기준으로 **정상/경고/위험** 상태를 판별합니다.
-    3. **이상 감지 알림 (WebSocket)**: 
+    3. **이상 감지 알림 (WebSocket)**:
         - 상태가 **'경고'** 또는 **'위험'**일 경우, Notification을 생성하여 DB에 저장합니다.
         - 연결된 모든 클라이언트에게 웹소켓(ANOMALY_DETECTED 이벤트)으로 실시간 알림을 전송합니다.
-    4. **설비 상태 업데이트**: 상태가 **'위험'**일 경우, 해당 설비의 가동 상태를 자동으로 ERROR로 변경합니다.
-    
+
     ### 🔒 보안:
     - 이 API는 **로그인한 사용자**만 호출할 수 있습니다.
+
+    > LLM 2차 분석은 `/api/v1/search` (오류코드 검색) 경로에서만 수행됩니다.
     """
     try:
         new_log = await log_generator_service.create_virtual_log_by_name(db, equipment_name)
-        return new_log
+        return {
+            "log_id": new_log.log_id,
+            "equipment_id": new_log.equipment_id,
+            "data_type": new_log.data_type,
+            "value": new_log.value,
+            "status": new_log.status,
+            "occurred_at": new_log.occurred_at,
+        }
     except HTTPException as e:
         raise e
     except Exception as e:
-        # 예상치 못한 에러 처리
         raise HTTPException(status_code=500, detail=f"가상 로그 생성 중 오류 발생: {str(e)}")

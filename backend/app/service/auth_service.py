@@ -55,6 +55,7 @@ class AuthService:
             "refresh_token": refresh_token,
             "token_type": "bearer",
             "user_info": {
+                "user_id": user.user_id,
                 "email": user.email,
                 "name": user.name,
                 "department": user.department,
