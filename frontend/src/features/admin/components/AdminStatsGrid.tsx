@@ -1,12 +1,57 @@
-import { adminStats } from '../model/adminData';
+import { useEffect, useState } from 'react';
+import { AlertTriangle, BookOpen } from 'lucide-react';
+
+import { dashboardApi } from '../../dashboard/infra/dashboard.api';
 import { adminStatColorClasses, type AdminStatColor } from '../model/adminTheme';
 
+type AdminStat = {
+  value: string;
+  unit: string;
+  label: string;
+  icon: typeof BookOpen;
+  color: AdminStatColor;
+};
+
 export function AdminStatsGrid() {
+  const [stats, setStats] = useState<AdminStat[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    dashboardApi
+      .getSummary()
+      .then((data) => {
+        if (cancelled) return;
+        setStats([
+          {
+            value: String(data.stats.manualCount),
+            unit: '종',
+            label: '등록 매뉴얼',
+            icon: BookOpen,
+            color: 'green',
+          },
+          {
+            value: String(data.stats.errorCodeCount),
+            unit: '개',
+            label: '오류코드',
+            icon: AlertTriangle,
+            color: 'red',
+          },
+        ]);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setStats([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      {adminStats.map((stat) => {
+      {stats.map((stat) => {
         const Icon = stat.icon;
-        const palette = adminStatColorClasses[stat.color as AdminStatColor];
+        const palette = adminStatColorClasses[stat.color];
 
         return (
           <article key={stat.label} className="flex min-h-[120px] items-center justify-between rounded-xl border border-slate-700/80 bg-slate-950/20 p-5">

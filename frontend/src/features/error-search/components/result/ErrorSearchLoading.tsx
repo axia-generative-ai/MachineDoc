@@ -1,67 +1,48 @@
-import { FileSearch, Loader2, Search, ShieldCheck, Sparkles, X } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
+import { Loader2, Search, ShieldCheck, X } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { Panel } from '../../../../shared/ui/Panel';
 
 type SearchLoadingStep = {
   label: string;
-  description: string;
-  icon: typeof ShieldCheck;
+  state: 'done' | 'active' | 'pending';
 };
 
 const text = {
-  searching: '검색 중...',
-  prefix: '오류코드',
-  suffix: '에 대한 매뉴얼과 조치 절차를 찾고 있습니다',
-  cancel: '검색 중단',
+  verifyingCode: '\uC624\uB958\uCF54\uB4DC \uAC80\uC99D',
+  searchingManual: '\uB9E4\uB274\uC5BC \uAC80\uC0C9',
+  creatingProcedure: 'AI \uC870\uCE58 \uC808\uCC28 \uC0DD\uC131',
+  searching: '\uAC80\uC0C9 \uC911...',
+  prefix: '\uC624\uB958\uCF54\uB4DC',
+  suffix: '\uC5D0 \uB300\uD55C \uB9E4\uB274\uC5BC\uACFC \uC870\uCE58 \uC808\uCC28\uB97C \uCC3E\uACE0 \uC788\uC2B5\uB2C8\uB2E4',
+  cancel: '\uAC80\uC0C9 \uC911\uB2E8',
 } as const;
 
-const loadingSteps: SearchLoadingStep[] = [
-  {
-    label: '오류코드 검증',
-    description: '등록된 코드와 연결 매뉴얼을 확인합니다.',
-    icon: ShieldCheck,
-  },
-  {
-    label: '매뉴얼 검색',
-    description: '관련 문서와 오류 코드 섹션을 찾습니다.',
-    icon: FileSearch,
-  },
-  {
-    label: 'AI 조치 절차 생성',
-    description: '분석 결과와 권장 조치를 정리합니다.',
-    icon: Sparkles,
-  },
-];
+const STEP_LABELS = [text.verifyingCode, text.searchingManual, text.creatingProcedure] as const;
+const STEP_INTERVAL_MS = 1500;
 
-const stepDurations = [900, 1700, 2600];
-
-function getStepState(index: number, currentStep: number) {
-  if (index < currentStep) return 'done';
-  if (index === currentStep) return 'active';
-  return 'pending';
+function buildSteps(activeIndex: number): SearchLoadingStep[] {
+  return STEP_LABELS.map((label, index) => ({
+    label,
+    state: index < activeIndex ? 'done' : index === activeIndex ? 'active' : 'pending',
+  }));
 }
 
 export function ErrorSearchLoading() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const keyword = searchParams.get('q') || 'E-204';
-  const [currentStep, setCurrentStep] = useState(0);
-  const activeStep = loadingSteps[currentStep] ?? loadingSteps[loadingSteps.length - 1];
-  const progress = useMemo(() => ((currentStep + 1) / loadingSteps.length) * 100, [currentStep]);
+  const keyword = searchParams.get('q') || 'OPE03';
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
-    const timers = stepDurations.map((duration, index) =>
-      window.setTimeout(() => {
-        setCurrentStep(Math.min(index + 1, loadingSteps.length - 1));
-      }, duration),
-    );
-
-    return () => {
-      timers.forEach((timer) => window.clearTimeout(timer));
-    };
+    const timer = window.setInterval(() => {
+      setActiveIndex((prev) => (prev < STEP_LABELS.length - 1 ? prev + 1 : prev));
+    }, STEP_INTERVAL_MS);
+    return () => window.clearInterval(timer);
   }, []);
+
+  const loadingSteps = buildSteps(activeIndex);
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-210px)] max-w-[960px] items-center justify-center px-2 py-10">
@@ -75,51 +56,31 @@ export function ErrorSearchLoading() {
 
         <div className="relative mt-7">
           <p className="text-[16px] font-black tracking-[0.24em] text-blue-300">AI MANUAL SEARCH</p>
-          <h1 className="mt-3 text-[34px] font-black text-white md:text-[42px]">{text.searching}</h1>
-          <p className="mt-3 text-[17px] font-semibold text-slate-400 md:text-[19px]">
+          <h1 className="mt-3 text-[34px] font-black tracking-[-0.06em] text-white md:text-[42px]">{text.searching}</h1>
+          <p className="mt-3 text-[17px] font-semibold tracking-[-0.04em] text-slate-400 md:text-[19px]">
             {text.prefix} <span className="font-black text-blue-300">{keyword}</span>{text.suffix}
-          </p>
-          <p className="mt-4 inline-flex rounded-lg border border-blue-400/20 bg-blue-500/10 px-4 py-2 text-[15px] font-bold text-blue-100">
-            {activeStep.description}
           </p>
         </div>
 
-        <div className="relative mx-auto mt-9 max-w-[680px]">
+        <div className="relative mx-auto mt-9 max-w-[620px]">
           <div className="absolute left-[12%] right-[12%] top-5 h-px bg-slate-700" />
-          <div className="absolute left-[12%] top-5 h-px bg-blue-500 transition-all duration-700" style={{ width: `${Math.max(progress - 25, 0)}%` }} />
-
           <div className="relative grid grid-cols-3 gap-3">
-            {loadingSteps.map((step, index) => {
-              const StepIcon = step.icon;
-              const state = getStepState(index, currentStep);
-
-              return (
-                <div key={step.label} className="flex flex-col items-center gap-3">
-                  <span
-                    className={`grid h-10 w-10 place-items-center rounded-full border text-sm font-black transition duration-500 ${
-                      state === 'done'
-                        ? 'border-blue-400 bg-blue-600 text-white shadow-[0_0_22px_rgba(37,99,235,0.48)]'
-                        : state === 'active'
-                          ? 'border-blue-300 bg-slate-950 text-blue-300 shadow-[0_0_22px_rgba(59,130,246,0.32)]'
-                          : 'border-slate-600 bg-slate-950 text-slate-500'
-                    }`}
-                  >
-                    {state === 'done' ? <ShieldCheck className="h-5 w-5" /> : state === 'active' ? <StepIcon className="h-5 w-5" /> : index + 1}
-                  </span>
-
-                  <div className="min-h-[56px]">
-                    <span className={`block text-[14px] font-bold ${state === 'pending' ? 'text-slate-500' : 'text-slate-100'}`}>{step.label}</span>
-                    {state === 'active' && (
-                      <span className="mt-1 flex items-center justify-center gap-1.5 text-[12px] font-semibold text-blue-300">
-                        <Search className="h-3.5 w-3.5" />
-                        진행 중
-                      </span>
-                    )}
-                    {state === 'done' && <span className="mt-1 block text-[12px] font-semibold text-emerald-300">완료</span>}
-                  </div>
-                </div>
-              );
-            })}
+            {loadingSteps.map((step) => (
+              <div key={step.label} className="flex flex-col items-center gap-3">
+                <span
+                  className={`grid h-10 w-10 place-items-center rounded-full border text-sm font-black transition ${
+                    step.state === 'done'
+                      ? 'border-blue-400 bg-blue-600 text-white shadow-[0_0_22px_rgba(37,99,235,0.48)]'
+                      : step.state === 'active'
+                        ? 'border-blue-300 bg-slate-950 text-blue-300 shadow-[0_0_22px_rgba(59,130,246,0.32)]'
+                        : 'border-slate-600 bg-slate-950 text-slate-500'
+                  }`}
+                >
+                  {step.state === 'done' ? <ShieldCheck className="h-5 w-5" /> : step.state === 'active' ? <Search className="h-5 w-5" /> : '3'}
+                </span>
+                <span className={`text-[14px] font-bold ${step.state === 'pending' ? 'text-slate-500' : 'text-slate-200'}`}>{step.label}</span>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -135,3 +96,6 @@ export function ErrorSearchLoading() {
     </div>
   );
 }
+
+
+

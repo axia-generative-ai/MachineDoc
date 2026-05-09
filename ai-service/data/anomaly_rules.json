@@ -1,103 +1,203 @@
 {
+  "_meta": {
+    "version": "v2-backend-aligned",
+    "updated": "2026-05-09",
+    "note": "백엔드 equipment_code(EQ-XXX-NNN) + DataType(TEMPERATURE/VIBRATION) 키 기준. 백엔드는 변환 없이 그대로 보내면 됨. 합성 데이터 기준의 v1 룰은 anomaly_rules.legacy_synthetic.json에 백업.",
+    "data_ranges": {
+      "TEMPERATURE": "20.0 ~ 110.0 °C (log_generator_service)",
+      "VIBRATION": "100.0 ~ 1300.0 Hz (log_generator_service)"
+    },
+    "severity_to_status": {
+      "high": "이상",
+      "critical": "이상",
+      "medium": "주의",
+      "low": "정상"
+    }
+  },
   "rules": [
     {
-      "rule_id": "pv300-pressure-low",
-      "equipment_id": "eq_pv300",
-      "metric": "pressure_kpa",
-      "operator": "<",
-      "threshold": 500.0,
-      "severity": "high",
-      "description": "공급 압력이 0.5 MPa 미만 — E-201 후보."
+      "rule_id": "motor-001-temp-warn",
+      "equipment_id": "EQ-MOTOR-001",
+      "metric": "TEMPERATURE",
+      "operator": ">",
+      "threshold": 70.0,
+      "severity": "medium",
+      "description": "정밀 모터 본체 온도 70°C 초과 — 베어링 과열 또는 윤활 부족 의심."
     },
     {
-      "rule_id": "pv300-temp-high",
-      "equipment_id": "eq_pv300",
-      "metric": "temperature_c",
+      "rule_id": "motor-001-temp-error",
+      "equipment_id": "EQ-MOTOR-001",
+      "metric": "TEMPERATURE",
+      "operator": ">",
+      "threshold": 90.0,
+      "severity": "high",
+      "description": "정밀 모터 임계 온도 90°C 초과 — 즉시 정지 권고. 절연 손상 위험."
+    },
+    {
+      "rule_id": "motor-001-vib-warn",
+      "equipment_id": "EQ-MOTOR-001",
+      "metric": "VIBRATION",
+      "operator": ">",
+      "threshold": 600.0,
+      "severity": "medium",
+      "description": "정밀 모터 진동 600Hz 초과 — 정렬 불량 또는 베어링 마모 의심."
+    },
+    {
+      "rule_id": "motor-001-vib-error",
+      "equipment_id": "EQ-MOTOR-001",
+      "metric": "VIBRATION",
+      "operator": ">",
+      "threshold": 900.0,
+      "severity": "high",
+      "description": "정밀 모터 진동 한계 초과 — 회전체 손상 가능성 높음."
+    },
+
+    {
+      "rule_id": "conveyor-002-temp-warn",
+      "equipment_id": "EQ-CONVEYOR-002",
+      "metric": "TEMPERATURE",
       "operator": ">",
       "threshold": 75.0,
       "severity": "medium",
-      "description": "본체 온도 75°C 초과."
+      "description": "컨베이어 구동부 온도 75°C 초과 — 모터 또는 감속기 과부하 의심."
     },
     {
-      "rule_id": "pv300-vibration-high",
-      "equipment_id": "eq_pv300",
-      "metric": "vibration_mm_s",
+      "rule_id": "conveyor-002-temp-error",
+      "equipment_id": "EQ-CONVEYOR-002",
+      "metric": "TEMPERATURE",
       "operator": ">",
-      "threshold": 4.0,
+      "threshold": 95.0,
       "severity": "high",
-      "description": "이상 진동 감지."
+      "description": "컨베이어 임계 온도 초과 — 감속기 윤활유 점검 즉시 필요."
     },
     {
-      "rule_id": "cv550-vibration-high",
-      "equipment_id": "eq_cv550",
-      "metric": "vibration_mm_s",
+      "rule_id": "conveyor-002-vib-warn",
+      "equipment_id": "EQ-CONVEYOR-002",
+      "metric": "VIBRATION",
       "operator": ">",
-      "threshold": 4.0,
+      "threshold": 700.0,
+      "severity": "medium",
+      "description": "컨베이어 벨트/롤러 진동 증가 — 정렬 또는 장력 점검."
+    },
+    {
+      "rule_id": "conveyor-002-vib-error",
+      "equipment_id": "EQ-CONVEYOR-002",
+      "metric": "VIBRATION",
+      "operator": ">",
+      "threshold": 1000.0,
       "severity": "high",
-      "description": "베어링 진동 4.0 mm/s 초과 — E-302 후보."
+      "description": "컨베이어 진동 한계 초과 — 롤러 베어링 손상 또는 이물 끼임 의심."
+    },
+
+    {
+      "rule_id": "press-003-temp-warn",
+      "equipment_id": "EQ-PRESS-003",
+      "metric": "TEMPERATURE",
+      "operator": ">",
+      "threshold": 80.0,
+      "severity": "medium",
+      "description": "프레스 유압유 온도 80°C 초과 — 냉각 효율 저하 의심."
     },
     {
-      "rule_id": "cv550-temp-high",
-      "equipment_id": "eq_cv550",
-      "metric": "winding_temp_c",
+      "rule_id": "press-003-temp-error",
+      "equipment_id": "EQ-PRESS-003",
+      "metric": "TEMPERATURE",
       "operator": ">",
-      "threshold": 130.0,
+      "threshold": 100.0,
       "severity": "high",
-      "description": "권선 온도 130°C 초과 — E-303 후보."
+      "description": "프레스 임계 온도 초과 — 유압 시스템 손상 위험. 즉시 정지."
     },
     {
-      "rule_id": "cv550-current-overload",
-      "equipment_id": "eq_cv550",
-      "metric": "current_a",
+      "rule_id": "press-003-vib-warn",
+      "equipment_id": "EQ-PRESS-003",
+      "metric": "VIBRATION",
       "operator": ">",
-      "threshold": 22.0,
-      "severity": "critical",
-      "description": "정격 전류 150% 초과 — E-301 후보."
+      "threshold": 800.0,
+      "severity": "medium",
+      "description": "프레스 진동 800Hz 초과 — 가이드 정렬 또는 클러치 점검 필요."
     },
     {
-      "rule_id": "hp120-pressure-low",
-      "equipment_id": "eq_hp120",
-      "metric": "pressure_mpa",
-      "operator": "<",
-      "threshold": 18.0,
-      "severity": "critical",
-      "description": "유압 라인 압력 18 MPa 미만 — E-401 후보."
-    },
-    {
-      "rule_id": "hp120-oil-overheat",
-      "equipment_id": "eq_hp120",
-      "metric": "oil_temp_c",
+      "rule_id": "press-003-vib-error",
+      "equipment_id": "EQ-PRESS-003",
+      "metric": "VIBRATION",
       "operator": ">",
-      "threshold": 70.0,
+      "threshold": 1100.0,
       "severity": "high",
-      "description": "작동유 70°C 초과 — E-402 후보."
+      "description": "프레스 진동 한계 초과 — 메인 슬라이드 또는 프레임 손상 가능."
     },
+
     {
-      "rule_id": "rb900-joint-torque-high",
-      "equipment_id": "eq_rb900",
-      "metric": "joint_torque_nm",
+      "rule_id": "robot-004-temp-warn",
+      "equipment_id": "EQ-ROBOT-004",
+      "metric": "TEMPERATURE",
       "operator": ">",
-      "threshold": 50.0,
-      "severity": "high",
-      "description": "관절 토크 한계 초과 — E-501 후보."
+      "threshold": 65.0,
+      "severity": "medium",
+      "description": "로봇 관절 모터 온도 65°C 초과 — 부하 과다 또는 감속기 마모 의심."
     },
     {
-      "rule_id": "cn450-spindle-load-high",
-      "equipment_id": "eq_cn450",
-      "metric": "spindle_load_pct",
+      "rule_id": "robot-004-temp-error",
+      "equipment_id": "EQ-ROBOT-004",
+      "metric": "TEMPERATURE",
       "operator": ">",
-      "threshold": 110.0,
+      "threshold": 85.0,
       "severity": "high",
-      "description": "주축 부하 110% 초과 — E-601 후보."
+      "description": "로봇 관절 임계 온도 — 즉시 정지 후 모터 점검."
     },
     {
-      "rule_id": "cn450-coolant-low",
-      "equipment_id": "eq_cn450",
-      "metric": "coolant_pressure_mpa",
-      "operator": "<",
-      "threshold": 0.3,
-      "severity": "low",
-      "description": "절삭유 압력 0.3 MPa 미만 — E-604 후보."
+      "rule_id": "robot-004-vib-warn",
+      "equipment_id": "EQ-ROBOT-004",
+      "metric": "VIBRATION",
+      "operator": ">",
+      "threshold": 500.0,
+      "severity": "medium",
+      "description": "로봇 진동 500Hz 초과 — 관절 백래시 또는 캘리브레이션 필요."
+    },
+    {
+      "rule_id": "robot-004-vib-error",
+      "equipment_id": "EQ-ROBOT-004",
+      "metric": "VIBRATION",
+      "operator": ">",
+      "threshold": 800.0,
+      "severity": "high",
+      "description": "로봇 진동 한계 초과 — 관절 감속기 또는 엔코더 손상 가능."
+    },
+
+    {
+      "rule_id": "welding-005-temp-warn",
+      "equipment_id": "EQ-WELDING-005",
+      "metric": "TEMPERATURE",
+      "operator": ">",
+      "threshold": 85.0,
+      "severity": "medium",
+      "description": "용접기 트랜스포머 온도 85°C 초과 — 듀티 사이클 점검 필요."
+    },
+    {
+      "rule_id": "welding-005-temp-error",
+      "equipment_id": "EQ-WELDING-005",
+      "metric": "TEMPERATURE",
+      "operator": ">",
+      "threshold": 105.0,
+      "severity": "high",
+      "description": "용접기 임계 온도 초과 — 절연 파괴 위험. 즉시 정지 + 냉각."
+    },
+    {
+      "rule_id": "welding-005-vib-warn",
+      "equipment_id": "EQ-WELDING-005",
+      "metric": "VIBRATION",
+      "operator": ">",
+      "threshold": 750.0,
+      "severity": "medium",
+      "description": "용접기 토치/지그 진동 증가 — 고정 상태 점검."
+    },
+    {
+      "rule_id": "welding-005-vib-error",
+      "equipment_id": "EQ-WELDING-005",
+      "metric": "VIBRATION",
+      "operator": ">",
+      "threshold": 1050.0,
+      "severity": "high",
+      "description": "용접기 진동 한계 초과 — 자동화 라인 정렬 또는 지그 고정 점검."
     }
   ]
 }

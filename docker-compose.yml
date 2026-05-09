@@ -18,11 +18,30 @@ services:
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
       - ./backend:/code
-    env_file:
-      - .env
     environment:
       DATABASE_URL: ${DATABASE_URL}
     ports:
       - "8000:8000"
+    depends_on:
+      - db
+
+  # ai-service runs on :8001 (locked 2026-05-08). Reaches Ollama on the
+  # host via host.docker.internal:11434 (dev/debug only — production
+  # provider swap to OpenAI is a later decision).
+  ai-service:
+    build: ./ai-service
+    container_name: smart_factory_ai
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8001
+    volumes:
+      - ./ai-service:/code
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      PIPELINE_VERSION: v2
+      CHUNKING_STRATEGY: v2
+    ports:
+      - "8001:8001"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - db

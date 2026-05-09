@@ -40,10 +40,29 @@ class UserRepository:
         return db_user
 
     def delete_user(self, db: Session, user_id: int):
+        from sqlalchemy import text
         user = db.query(User).filter(User.user_id == user_id).first()
-        if user:
-            db.delete(user)
-            db.commit()
+        if not user:
+            return None
+        # FK CASCADE 미설정. 수동 정리:
+        # 1) action_log → search_history → user
+        db.execute(text(
+            "DELETE FROM action_log WHERE history_id IN ("
+            "SELECT history_id FROM search_history WHERE user_id = :uid)"
+        ), {"uid": user_id})
+        db.execute(text("DELETE FROM search_history WHERE user_id = :uid"), {"uid": user_id})
+        # 2) refresh_tokens
+        db.execute(text("DELETE FROM refresh_tokens WHERE user_id = :uid"), {"uid": user_id})
+        # 3) saved_manual → error_code (manual_id FK CASCADE)는 이미 모델에 cascade='all,delete-orphan'
+        # saved_manual은 user_id FK라 정리 필요
+        db.execute(text(
+            "DELETE FROM error_code WHERE manual_id IN ("
+            "SELECT manual_id FROM saved_manual WHERE user_id = :uid)"
+        ), {"uid": user_id})
+        db.execute(text("DELETE FROM saved_manual WHERE user_id = :uid"), {"uid": user_id})
+        # 4) user
+        db.delete(user)
+        db.commit()
         return user
 
     def get_pending_users(self, db: Session):

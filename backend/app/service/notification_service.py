@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from app.crud.crud_notification import notification_repository
 from app.crud.crud_equipment import equipment_repository
+from app.models.error_code import ErrorCode
 from app.schemas.notification import NotificationCreate, NotificationResponse
 from app.models.log import EquipmentLog, LogStatus
 from app.models.equipment import Equipment, EquipmentStatus
@@ -40,17 +41,31 @@ class NotificationService:
             )
 
         # 5. 응답 스키마 조립 (DB 객체 + 추가 정보)
-        # model_dump로 딕셔너리화 한 뒤 추가 필드를 병합하여 Response 생성
+        # 해당 장비에 매핑된 첫 오류코드 (없으면 글로벌 fallback)
+        from app.models.saved_manual import SavedManual
+        suggested_code = (
+            db.query(ErrorCode.code_name)
+            .join(SavedManual, SavedManual.manual_id == ErrorCode.manual_id)
+            .filter(SavedManual.equipment_id == equipment.equipment_id)
+            .order_by(ErrorCode.error_code_id.asc())
+            .limit(1)
+            .scalar()
+        )
+        if not suggested_code:
+            suggested_code = (
+                db.query(ErrorCode.code_name).order_by(ErrorCode.error_code_id.asc()).limit(1).scalar()
+            )
         response_data = {
             "notification_id": new_noti.notification_id,
             "log_id": new_noti.log_id,
             "message": new_noti.message,
             "is_read": new_noti.is_read,
             "level": new_noti.level,
-            "occured_at": new_noti.occured_at,
+            "occurred_at": new_noti.occurred_at,
             "equipment_id": equipment.equipment_id,
             "equipment_code": equipment.equipment_code,
-            "location": equipment.location
+            "location": equipment.location,
+            "suggested_error_code": suggested_code,
         }
         final_response = NotificationResponse(**response_data)
 

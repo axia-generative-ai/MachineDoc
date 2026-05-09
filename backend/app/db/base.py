@@ -9,4 +9,3 @@ from app.models.log import EquipmentLog
 from app.models.notification import Notification
 from app.models.search_history import SearchHistory
 from app.models.action_log import ActionLog
-from app.models.threshold import EquipmentThreshold

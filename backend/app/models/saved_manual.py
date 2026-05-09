@@ -15,6 +15,9 @@ class SavedManual(Base):
     file_url = Column(String(500), nullable=False)
     category = Column(String(100), nullable=False) # 설비명 또는 카테고리
     version = Column(String(50), nullable=False)
+
+    # 어떤 설비의 매뉴얼인지 (선택). 알림→오류코드 매칭에 사용
+    equipment_id = Column(BigInteger, ForeignKey("equipment.equipment_id"), nullable=True)
     
     # 생성 시간 자동 설정
     saved_at = Column(DateTime(timezone=True), server_default=func.now())

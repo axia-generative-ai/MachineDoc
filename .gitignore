@@ -56,9 +56,9 @@ desktop.ini
 # =====================
 # AI / Data
 # =====================
-ai-service/data/chroma_db/
 *.sqlite3
 *.db
+.manuals/
 postgres_data/
 
 # =====================
@@ -66,3 +66,8 @@ postgres_data/
 # =====================
 *.log
 logs/
+
+# =====================
+# Claude Code workspace state
+# =====================
+.claude/

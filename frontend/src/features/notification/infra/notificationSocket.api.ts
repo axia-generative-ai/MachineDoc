@@ -20,7 +20,7 @@ type BackendNotificationMessage = {
 
 function getWebSocketUrl() {
   if (env.wsUrl) {
-    return `${env.wsUrl.replace(/\/$/, '')}/ws/v1/notifications`;
+    return `${env.wsUrl.replace(/\/$/, '')}/notifications`;
   }
 
   return `${env.apiBaseUrl.replace(/^http/, 'ws').replace(/\/api\/v1\/?$/, '')}/ws/v1/notifications`;

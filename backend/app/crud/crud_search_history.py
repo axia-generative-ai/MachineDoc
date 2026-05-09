@@ -1,7 +1,14 @@
+from typing import Optional
 from sqlalchemy.orm import Session
 from app.models.search_history import SearchHistory
 
 class SearchHistoryRepository:
+    def list_by_user(self, db: Session, *, user_id: int, limit: int, status: Optional[str] = None):
+        q = db.query(SearchHistory).filter(SearchHistory.user_id == user_id)
+        if status:
+            q = q.filter(SearchHistory.status == status)
+        return q.order_by(SearchHistory.history_id.desc()).limit(limit).all()
+
     def create_search_history(self, db: Session, *, user_id: int, query: str, result: str, status: str):
         """
         검색 이력을 DB에 저장합니다.

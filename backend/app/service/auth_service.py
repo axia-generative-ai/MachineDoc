@@ -1,13 +1,10 @@
-from fastapi import HTTPException, status
-from jose import JWTError, jwt
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.models.user import User
 from app.crud.crud_user import user_repository
 from app.schemas.user import UserState
 from app.crud.crud_token import token_repository
 from app.schemas.token import RefreshTokenCreate
-from app.core.config import config
-from app.db.session import SessionLocal
 from app.core.security import verify_password, create_access_token, create_refresh_token
 from datetime import datetime, timedelta
 
@@ -58,6 +55,7 @@ class AuthService:
             "refresh_token": refresh_token,
             "token_type": "bearer",
             "user_info": {
+                "user_id": user.user_id,
                 "email": user.email,
                 "name": user.name,
                 "department": user.department,
@@ -75,28 +73,5 @@ class AuthService:
         
         db.commit()
         return "로그아웃이 완료됐습니다."
-
-    def verify_token(self, token: str):
-        credentials_exception = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="인증 정보가 유효하지 않습니다.",
-        )
-
-        try:
-            payload = jwt.decode(token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
-            email = payload.get("sub")
-            if email is None:
-                raise credentials_exception
-        except JWTError:
-            raise credentials_exception
-
-        db = SessionLocal()
-        try:
-            user = user_repository.get_user_by_email(db, email=email)
-            if user is None:
-                raise credentials_exception
-            return user
-        finally:
-            db.close()
 
 auth_service = AuthService()
