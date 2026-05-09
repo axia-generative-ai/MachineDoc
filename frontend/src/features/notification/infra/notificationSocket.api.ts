@@ -11,6 +11,7 @@ type BackendNotificationPayload = {
   level?: string;
   occured_at?: string;
   occurred_at?: string;
+  suggested_error_code?: string | null;
 };
 
 type BackendNotificationMessage = {
@@ -50,16 +51,18 @@ function formatCreatedAt(value?: string) {
 
 function mapNotification(payload: BackendNotificationPayload): RealtimeNotification {
   const equipment = payload.equipment_code ?? 'UNKNOWN';
-  const location = payload.location;
+  const notificationId = payload.notification_id == null ? null : Number(payload.notification_id);
 
   return {
     id: String(payload.notification_id ?? `${Date.now()}-${Math.random()}`),
+    notificationId: Number.isNaN(notificationId) ? null : notificationId,
     severity: mapSeverity(payload.level),
     title: `${equipment} 이상 감지`,
     equipment,
-    location,
     detail: payload.message ?? '이상 징후가 감지되었습니다.',
     createdAt: formatCreatedAt(payload.occured_at ?? payload.occurred_at),
+    location: payload.location,
+    suggestedErrorCode: payload.suggested_error_code ?? null,
     isUnread: true,
   };
 }

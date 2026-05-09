@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 
-import { colorClasses, type DashboardColor } from '../model/dashboardTheme';
 import { Panel } from '../../../shared/ui/Panel';
+import { colorClasses, type DashboardColor } from '../model/dashboardTheme';
 
 export type StatCardData = {
   label: string;
@@ -27,11 +27,11 @@ export function StatCard({ stat }: StatCardProps) {
         <Icon className={`h-11 w-11 ${palette.text}`} strokeWidth={2.4} />
       </div>
       <div>
-        <p className={`text-[42px] font-black leading-none tracking-[-0.07em] ${palette.text}`}>
+        <p className={`text-[42px] font-black leading-none ${palette.text}`}>
           {stat.value}
           <span className="ml-1 text-[24px]">{stat.unit}</span>
         </p>
-        <p className="mt-2 text-[22px] font-bold tracking-[-0.04em] text-white">{stat.label}</p>
+        <p className="mt-2 text-[22px] font-bold text-white">{stat.label}</p>
         <p className="mt-3 text-[16px] font-semibold text-slate-400">
           {stat.caption} <span className={palette.text}>{stat.accent}</span>
         </p>

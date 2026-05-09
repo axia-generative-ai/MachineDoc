@@ -33,7 +33,7 @@ class Notification(Base):
     level = Column(Enum(NotificationLevel), nullable=False)
     
     # 발생 시각 (로그 발생 시각과 맞춤)
-    occurred_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    occurred_at = Column("occured_at", DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     # 관계 설정: 알림에서 해당 로그 정보에 바로 접근 가능
     log = relationship("EquipmentLog", back_populates="notification")

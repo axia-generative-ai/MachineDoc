@@ -18,6 +18,10 @@ export function useNotificationSocket() {
     setNotifications((prev) => prev.filter((notification) => notification.id !== id));
   }, []);
 
+  const clearNotifications = useCallback(() => {
+    setNotifications([]);
+  }, []);
+
   useEffect(() => {
     return subscribeNotificationsUseCase(notificationRepositoryImpl, {
       onStatusChange: setStatus,
@@ -33,5 +37,6 @@ export function useNotificationSocket() {
     status,
     markAllRead,
     dismissNotification,
+    clearNotifications,
   };
 }
