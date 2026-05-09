@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from app.models.search_history import SearchHistory
 
-class SearchHistoryRepository:
+class CRUDSearchHistory:
     def create_search_history(self, db: Session, *, user_id: int, query: str, result: str, status: str):
         """
         검색 이력을 DB에 저장합니다.
@@ -26,4 +26,4 @@ class SearchHistoryRepository:
             print(f"SearchHistory 저장 실패: {e}")
             raise e
 
-search_history_repository = SearchHistoryRepository()
+search_history_repository = CRUDSearchHistory()

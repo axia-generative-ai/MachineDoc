@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response, Cookie, status, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.user import User
@@ -8,6 +8,8 @@ from app.service.auth_service import auth_service
 from app.api.deps import get_current_user
 
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import APIRouter, Depends, Body
+from app.schemas.token import TokenRefreshRequest
 
 router = APIRouter()
 
@@ -41,6 +43,7 @@ def register_user(obj_in: UserCreate, db: Session = Depends(get_db)):
 )
 # def login(login_data: UserLoginSchema, db: Session = Depends(get_db)):
 def login(
+    response: Response,
     db: Session = Depends(get_db),
     form_data: OAuth2PasswordRequestForm = Depends() # JSON 대신 Form으로 받기
 ):    
@@ -51,10 +54,17 @@ def login(
     - **login**: 이미 로그인 중 (중복 로그인 차단)
     """
     # return auth_service.authenticate_user(db, login_data=login_data)
-    return auth_service.authenticate_user(db, username=form_data.username, password=form_data.password)
+    result = auth_service.authenticate_user(db, username=form_data.username, password=form_data.password)
+    auth_service.set_refresh_cookie(response, result["refresh_token"])
+    return {
+        "access_token": result["access_token"],
+        "token_type": "bearer",
+        "user_info": result["user_info"]
+    }
 
 @router.post("/logout", summary="로그아웃")
 def logout(
+    response: Response,
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user) # 토큰 검증은 여기서 자동 처리
 ):
@@ -63,4 +73,30 @@ def logout(
     - DB의 사용자 상태를 **logout**으로 변경
     - 저장된 리프레시 토큰 삭제
     """
-    return auth_service.logout_user(db, user=current_user)
+    auth_service.logout_user(db, current_user)
+    response.delete_cookie(key="refresh_token", path="/")
+    return {"detail": "Successfully logged out"}
+
+@router.post(
+    "/refresh", 
+    summary="액세스 토큰 재발급",
+    description="만료된 액세스 토큰을 대신해 리프레시 토큰을 이용하여 새로운 액세스 토큰을 발급받습니다."
+)
+async def refresh_token(
+    # response: Response,
+    request_data: TokenRefreshRequest = Body(...),
+    db: Session = Depends(get_db),
+    refresh_token: str = Cookie(None)
+):
+    if not refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="리프레시 토큰이 쿠키에 존재하지 않습니다."
+        )
+    
+    result = auth_service.refresh_access_token(db, refresh_token)
+
+    # (선택) 만약 리프레시 토큰 회전(Rotation)을 쓴다면 여기서 쿠키를 새로 구워줌
+    # auth_service.set_refresh_cookie(response, result["new_refresh_token"])
+    
+    return result

@@ -3,7 +3,7 @@ from app.models.user import User, UserState
 from app.schemas.user import UserCreate, UserUpdateByAdmin
 from app.core.security import get_password_hash # 아까 만든 암호화 함수
 
-class UserRepository:
+class CRUDUser:
     # 이메일로 중복 사용자 확인
     def get_user_by_email(self, db: Session, email: str):
         return db.query(User).filter(User.email == email).first()
@@ -74,4 +74,4 @@ class UserRepository:
         """
         return db.query(User).offset(skip).limit(limit).all()
 
-user_repository = UserRepository()
+user_repository = CRUDUser()

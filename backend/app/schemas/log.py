@@ -30,6 +30,13 @@ class EquipmentLogResponse(BaseModel):
     status: LogStatus
     occurred_at: datetime
 
-    # SQLAlchemy 모델 객체를 Pydantic 스키마로 변환하기 위한 설정
-    # (FastAPI가 DB 객체를 이 스키마에 자동으로 매핑해줍니다)
+    model_config = ConfigDict(from_attributes=True)
+
+class InfoLogResponse(BaseModel):
+    log_id: int
+    data_type: DataType
+    value: float
+    status: LogStatus
+    occurred_at: datetime
+
     model_config = ConfigDict(from_attributes=True)

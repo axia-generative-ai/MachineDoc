@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from app.models.refresh_token import RefreshToken  # DB 모델
 from app.schemas.token import RefreshTokenCreate
 
-class TokenRepositoy:
+class CRUDToken:
     def create_or_update_refresh_token(self, db: Session, obj_in: RefreshTokenCreate):
         # 1. 해당 유저에게 기존에 발급된 토큰이 있는지 확인
         db_obj = db.query(RefreshToken).filter(RefreshToken.user_id == obj_in.user_id).first()
@@ -28,4 +28,7 @@ class TokenRepositoy:
         db.query(RefreshToken).filter(RefreshToken.user_id == user_id).delete()
         db.commit()
 
-token_repository = TokenRepositoy()
+    def get_refresh_token_by_token(self, db: Session, token: str):
+        return db.query(RefreshToken).filter(RefreshToken.token == token).first()
+
+token_repository = CRUDToken()
