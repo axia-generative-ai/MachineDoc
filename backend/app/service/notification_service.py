@@ -61,7 +61,7 @@ class NotificationService:
             "message": new_noti.message,
             "is_read": new_noti.is_read,
             "level": new_noti.level,
-            "occured_at": new_noti.occured_at,
+            "occurred_at": new_noti.occurred_at,
             "equipment_id": equipment.equipment_id,
             "equipment_code": equipment.equipment_code,
             "location": equipment.location,

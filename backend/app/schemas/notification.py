@@ -17,7 +17,7 @@ class NotificationResponse(BaseModel):
     message: str
     is_read: ReadStatus
     level: NotificationLevel
-    occured_at: datetime
+    occurred_at: datetime
     equipment_id: int
     equipment_code: str
     location: str

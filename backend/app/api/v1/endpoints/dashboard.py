@@ -134,7 +134,7 @@ def get_dashboard_summary(
             Notification.notification_id,
             Notification.message,
             Notification.level,
-            Notification.occured_at,
+            Notification.occurred_at,
             EquipmentLog.value,
             EquipmentLog.data_type,
             Equipment.equipment_code,

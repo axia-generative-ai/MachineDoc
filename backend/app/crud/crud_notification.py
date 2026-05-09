@@ -28,7 +28,7 @@ class CRUDNotification:
                 Notification.message,
                 Notification.is_read,
                 Notification.level,
-                Notification.occured_at,
+                Notification.occurred_at,
                 EquipmentLog.equipment_id,
                 Equipment.equipment_code,
                 Equipment.location,

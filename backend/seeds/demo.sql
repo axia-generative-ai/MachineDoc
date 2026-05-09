@@ -67,7 +67,7 @@ SELECT
 FROM generate_series(1, 12) AS g;
 
 -- notification 1:1 (12건 중 4건 미확인, 4건 확인, 4건 완료 — digest 보장)
-INSERT INTO notification (log_id, message, is_read, level, occured_at)
+INSERT INTO notification (log_id, message, is_read, level, occurred_at)
 SELECT
     l.log_id,
     e.equipment_code || ' ' || l.data_type || ' 임계 초과 (' || round(l.value::numeric, 1) || ')' AS message,

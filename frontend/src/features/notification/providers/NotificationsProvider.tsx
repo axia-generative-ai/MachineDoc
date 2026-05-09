@@ -34,7 +34,7 @@ type AnomalyPayload = {
     message?: string;
     is_read?: string;
     level?: string;
-    occured_at?: string;
+    occurred_at?: string;
     equipment_id?: number;
     equipment_code?: string;
     location?: string;
@@ -70,7 +70,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       title: `${data.equipment_code ?? '설비'} 이상 감지`,
       equipment: data.equipment_code ?? '-',
       detail: data.message ?? '이상 감지 알림',
-      createdAt: formatTimestamp(data.occured_at),
+      createdAt: formatTimestamp(data.occurred_at),
       isUnread: true,
       suggestedErrorCode: data.suggested_error_code ?? null,
     };

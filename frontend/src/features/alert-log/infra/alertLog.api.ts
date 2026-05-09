@@ -22,7 +22,7 @@ type BackendNotification = {
   message: string;
   is_read: ReadStatus;
   level: NotificationLevel;
-  occured_at: string;
+  occurred_at: string;
   equipment_id: number;
   equipment_code: string;
   location: string;
@@ -36,7 +36,7 @@ function mapNotification(data: BackendNotification): AlertLogItem {
     message: data.message,
     isRead: data.is_read,
     level: data.level,
-    occurredAt: data.occured_at,
+    occurredAt: data.occurred_at,
     equipmentId: data.equipment_id,
     equipmentCode: data.equipment_code,
     location: data.location,
