@@ -51,13 +51,70 @@ class ManualService:
         ]
 
     async def get_equipment_manual(self, db, equipment_code, category):
-        # 카테고리 우선 조회. 카테고리 미지정 시 전체 매뉴얼 반환.
+        # 1. DB 우선 조회
         if category:
             manuals = manual_repository.get_manuals_by_category(db, category=category)
         else:
             manuals = manual_repository.get_all_manuals(db) if hasattr(manual_repository, "get_all_manuals") else []
 
-        return {"source": "database", "data": manuals}
+        if manuals:
+            return {"source": "database", "data": manuals}
+
+        # 2. DB가 비면 ai-service /manuals/recommend로 fallback (LLM 미사용, ~1s).
+        # ai-service는 manual_id를 slug(text)로 반환 → SearchManual.manual_id(int)에
+        # 직접 매핑 못한다. saved_manual title 으로 매칭 시도하고, 매칭 실패 시
+        # manual_id=0 으로 합성해 FE는 source 필드로 출처를 구분한다.
+        try:
+            payload = {
+                "equipment_id": equipment_code,
+                "category": category,
+                "top_k": 5,
+            }
+            url = f"{AI_SERVER_URL.rstrip('/')}/api/v1/manuals/recommend"
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.post(url, json=payload)
+                resp.raise_for_status()
+                ai_payload = resp.json()
+        except (httpx.HTTPStatusError, httpx.RequestError):
+            # ai-service 에 도달 못해도 빈 결과로 graceful degrade
+            return {"source": "ai_recommendation", "data": []}
+
+        results = ai_payload.get("results") or []
+        from datetime import datetime
+        from app.models.saved_manual import SavedManual
+
+        synthesized = []
+        for hit in results:
+            slug = hit.get("manual_id") or ""
+            pretty_title = hit.get("title") or slug.replace("_", " ")
+
+            # 이름 prefix 매칭으로 saved_manual 후보 찾기 (제일 가까운 1건).
+            db_manual = None
+            if slug:
+                db_manual = (
+                    db.query(SavedManual)
+                    .filter(SavedManual.title.ilike(f"%{slug.split('_')[0]}%"))
+                    .first()
+                )
+
+            if db_manual:
+                synthesized.append({
+                    "manual_id": db_manual.manual_id,
+                    "title": db_manual.title,
+                    "category": db_manual.category,
+                    "version": db_manual.version,
+                    "saved_at": db_manual.saved_at,
+                })
+            else:
+                synthesized.append({
+                    "manual_id": 0,
+                    "title": pretty_title,
+                    "category": category or "추천",
+                    "version": "AI",
+                    "saved_at": datetime.utcnow(),
+                })
+
+        return {"source": "ai_recommendation", "data": synthesized}
 
     def list_my_manuals(self, db, user_id: int):
         return manual_repository.get_manuals_by_user(db, user_id=user_id)
