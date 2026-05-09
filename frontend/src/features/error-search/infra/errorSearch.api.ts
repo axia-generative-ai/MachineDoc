@@ -1,15 +1,32 @@
 import { apiClient } from '../../../shared/api/apiClient';
-import type { ErrorSearchCommand, ErrorSearchResult } from '../model/errorSearch.types';
+import type { ErrorSearchCommand, ErrorSearchResult, ManualCitation } from '../model/errorSearch.types';
+
+type BackendCitation = {
+  filename: string;
+  page: number;
+  manual_id: number | null;
+};
 
 type BackendErrorSearchResponse = {
   status?: string;
   analysis?: string;
   solution?: string;
+  history_id?: number | null;
+  citations?: BackendCitation[];
   [key: string]: unknown;
 };
 
 function toText(value: unknown, fallback: string) {
   return typeof value === 'string' && value.trim() ? value : fallback;
+}
+
+function mapCitations(rows: BackendCitation[] | undefined): ManualCitation[] {
+  if (!Array.isArray(rows)) return [];
+  return rows.map((row) => ({
+    filename: row.filename,
+    page: row.page,
+    manualId: row.manual_id ?? null,
+  }));
 }
 
 function mapErrorSearchResult(command: ErrorSearchCommand, data: BackendErrorSearchResponse): ErrorSearchResult {
@@ -19,6 +36,8 @@ function mapErrorSearchResult(command: ErrorSearchCommand, data: BackendErrorSea
       status: 'MOCK_COMPLETED',
       analysis: 'AI 서버 연동 전 테스트 응답입니다. 오류 코드 기준으로 관련 매뉴얼을 조회했습니다.',
       solution: '설비 상태를 확인하고, 관련 매뉴얼의 조치 절차에 따라 점검을 진행하세요.',
+      historyId: data.history_id ?? null,
+      citations: [],
       raw: data,
     };
   }
@@ -28,6 +47,8 @@ function mapErrorSearchResult(command: ErrorSearchCommand, data: BackendErrorSea
     status: toText(data.status, 'COMPLETED'),
     analysis: toText(data.analysis, 'AI 분석 결과를 불러왔습니다.'),
     solution: toText(data.solution, '관련 매뉴얼을 확인한 뒤 권장 조치를 진행하세요.'),
+    historyId: data.history_id ?? null,
+    citations: mapCitations(data.citations),
     raw: data,
   };
 }
