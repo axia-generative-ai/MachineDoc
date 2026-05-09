@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 
 import { env } from '../../../shared/config/env';
 import { authTokenStorage } from '../../../shared/storage/authToken.storage';
+import { alertLogApi, type AlertLogItem } from '../../alert-log/infra/alertLog.api';
 
 export type LiveNotification = {
   id: string;
@@ -74,7 +75,53 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       isUnread: true,
       suggestedErrorCode: data.suggested_error_code ?? null,
     };
-    setNotifications((prev) => [notification, ...prev].slice(0, 50));
+    setNotifications((prev) => {
+      // notificationId 기반 dedup. WS 재연결 후 같은 알림 재방송 받아도 중복 안됨.
+      // notificationId=0 은 dedup 키로 못 쓰므로 그대로 prepend.
+      if (notification.notificationId > 0
+          && prev.some((item) => item.notificationId === notification.notificationId)) {
+        return prev;
+      }
+      return [notification, ...prev].slice(0, 50);
+    });
+  }, []);
+
+  // 마운트 시 과거 알림 시드. WS 는 미래 이벤트만 받으므로 페이지 새로고침 후
+  // 그 전에 발생한 알림이 사라지는 문제를 막는다.
+  const seededRef = useRef(false);
+  useEffect(() => {
+    if (seededRef.current) return;
+    seededRef.current = true;
+    if (!authTokenStorage.getAccessToken()) return;
+    let cancelled = false;
+    alertLogApi.list(50)
+      .then((items: AlertLogItem[]) => {
+        if (cancelled) return;
+        // BE 는 최신순 ['최신','이전','...'] 으로 반환하므로 그대로 prepend.
+        const seeded = items.map<LiveNotification>((row) => ({
+          id: `noti-seed-${row.notificationId}`,
+          notificationId: row.notificationId,
+          level: levelToSeverity(row.level),
+          title: `${row.equipmentCode ?? '설비'} 이상 감지`,
+          equipment: row.equipmentCode ?? '-',
+          detail: row.message,
+          createdAt: formatTimestamp(row.occurredAt),
+          isUnread: row.isRead === '미확인',
+          suggestedErrorCode: row.suggestedErrorCode ?? null,
+        }));
+        setNotifications((prev) => {
+          // 이미 WS 로 들어온 알림이 있으면 notificationId 로 dedup 후 합치기.
+          const existingIds = new Set(prev.map((p) => p.notificationId));
+          const merged = [...prev, ...seeded.filter((s) => !existingIds.has(s.notificationId))];
+          return merged.slice(0, 50);
+        });
+      })
+      .catch(() => {
+        // 401/네트워크 실패 시 graceful — WS 만 의지.
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const isCancelledRef = useRef(false);
