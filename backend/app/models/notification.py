@@ -2,7 +2,7 @@ import enum
 from sqlalchemy import Column, BigInteger, Text, Enum, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from app.db.base import Base
+from app.db.session import Base
 
 # 읽음 및 처리 상태 정의
 class ReadStatus(str, enum.Enum):

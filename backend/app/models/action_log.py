@@ -2,7 +2,7 @@ import enum
 from sqlalchemy import Column, BigInteger, Text, Integer, Enum, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from app.db.base import Base
+from app.db.session import Base
 
 # 조치 상태 정의
 class ActionStatus(str, enum.Enum):

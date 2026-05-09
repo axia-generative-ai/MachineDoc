@@ -1,6 +1,6 @@
 from sqlalchemy import Column, BigInteger, String, ForeignKey
 from sqlalchemy.orm import relationship
-from app.db.base import Base
+from app.db.session import Base
 
 class ErrorCode(Base):
     __tablename__ = "error_code"

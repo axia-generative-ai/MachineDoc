@@ -2,7 +2,7 @@ import enum
 from sqlalchemy import Column, BigInteger, Float, Enum, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from app.db.base import Base
+from app.db.session import Base
 
 # 데이터 타입 정의
 class DataType(str, enum.Enum):

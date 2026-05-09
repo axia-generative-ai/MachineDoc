@@ -1,7 +1,7 @@
 from sqlalchemy import Column, BigInteger, String, Text, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from app.db.base import Base
+from app.db.session import Base
 
 class SearchHistory(Base):
     __tablename__ = "search_history"

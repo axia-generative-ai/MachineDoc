@@ -1,6 +1,9 @@
 from sqlalchemy import Column, BigInteger, ForeignKey, Float, Enum, String
 from sqlalchemy.orm import relationship
-from app.db.base import Base
+# app.db.base 는 모든 모델을 모아 Base.metadata 를 구성하는 aggregator.
+# threshold 가 거기서 Base 를 가져오면 base.py → threshold.py → base.py 순환.
+# Base 는 session.py 가 단독 소유하므로 직접 가져오면 순환이 끊긴다.
+from app.db.session import Base
 from app.models.log import DataType  # 이전에 정의한 DataType Enum 사용
 
 class EquipmentThreshold(Base):
