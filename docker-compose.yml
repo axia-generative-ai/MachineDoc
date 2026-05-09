@@ -15,15 +15,21 @@ services:
   backend:
     build: ./backend
     container_name: smart_factory_api
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    # WS broadcast는 in-process ConnectionManager라 단일 워커 필수.
+    # 멀티 워커는 다른 워커의 connection 으로 broadcast 안 됨 (Redis Pub/Sub 도입 전까지).
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --workers 1
     volumes:
       - ./backend:/code
     environment:
       DATABASE_URL: ${DATABASE_URL}
+      # 컨테이너 안에서 localhost:8001은 backend 자기 자신을 가리킨다.
+      # ai-service 컨테이너에 도달하려면 compose 서비스명을 사용해야 한다.
+      AI_SERVICE_URL: http://smart_factory_ai:8001
     ports:
       - "8000:8000"
     depends_on:
       - db
+      - ai-service
 
   # ai-service runs on :8001 (locked 2026-05-08). Reaches Ollama on the
   # host via host.docker.internal:11434 (dev/debug only — production
