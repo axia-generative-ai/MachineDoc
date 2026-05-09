@@ -53,6 +53,9 @@ class ManualService:
             "data": manuals
         }
     
+    def list_my_manuals(self, db, user_id: int):
+        return manual_repository.get_manuals_by_user(db, user_id=user_id)
+    
     def get_manual_file_response(self, db, manual_id):
         # 1. DB에서 매뉴얼 정보 조회
         manual = manual_repository.get_manual_by_id(db, manual_id)
