@@ -1,14 +1,25 @@
-import type { stats } from '../model/dashboardData';
+import type { LucideIcon } from 'lucide-react';
+
 import { colorClasses, type DashboardColor } from '../model/dashboardTheme';
 import { Panel } from '../../../shared/ui/Panel';
 
+export type StatCardData = {
+  label: string;
+  value: string;
+  unit: string;
+  caption: string;
+  accent: string;
+  color: DashboardColor;
+  icon: LucideIcon;
+};
+
 type StatCardProps = {
-  stat: (typeof stats)[number];
+  stat: StatCardData;
 };
 
 export function StatCard({ stat }: StatCardProps) {
   const Icon = stat.icon;
-  const palette = colorClasses[stat.color as DashboardColor];
+  const palette = colorClasses[stat.color];
 
   return (
     <Panel className="flex min-h-[150px] items-center gap-6 p-5 transition duration-300 hover:-translate-y-1 hover:border-blue-400/45 hover:bg-slate-900/45">

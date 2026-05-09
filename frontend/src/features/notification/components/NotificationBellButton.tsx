@@ -1,36 +1,31 @@
 import { useEffect, useRef, useState } from 'react';
 import { Bell } from 'lucide-react';
 
-import { notifications } from '../model/notificationData';
+import { useNotifications } from '../providers/NotificationsProvider';
 import { NotificationDropdown } from './NotificationDropdown';
 
 export function NotificationBellButton() {
   const [isOpen, setIsOpen] = useState(false);
-  const unreadCount = notifications.filter((notification) => notification.isUnread).length;
+  const { unreadCount } = useNotifications();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape') {
-    setIsOpen(false);
-  }
-};
-
+      if (event.key === 'Escape') setIsOpen(false);
+    };
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
-  };
-  document.addEventListener('mousedown', handleClickOutside);
-  document.addEventListener('keydown', handleKeyDown);
-  
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);  
+      document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
     };
-}, [isOpen]);
-
+  }, [isOpen]);
 
   return (
     <div ref={containerRef} className="relative">
@@ -48,7 +43,7 @@ export function NotificationBellButton() {
         )}
       </button>
 
-      {isOpen && <NotificationDropdown />}
+      {isOpen && <NotificationDropdown onClose={() => setIsOpen(false)} />}
     </div>
   );
 }
