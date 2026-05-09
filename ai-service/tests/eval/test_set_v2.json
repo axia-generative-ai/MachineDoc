@@ -1,0 +1,436 @@
+[
+  {
+    "id": "v2_001",
+    "query_type": "error_code",
+    "error_code": "10009",
+    "natural_language_query": "How do I fix ABB robot error 10009?",
+    "expected_manual_id": "abb_irb_troubleshooting",
+    "expected_section_id": "bc090372-aafc-4ca7-8495-1993fc30dcb1",
+    "expected_pages": [
+      81,
+      81
+    ],
+    "heading_path": [
+      "10009, Work memory full"
+    ],
+    "section_type": "procedure",
+    "snippet": "10009, Work memory full\nThe task arg has no memory left for new RAPID instructions or data.\nSave the program and then restart the system."
+  },
+  {
+    "id": "v2_002",
+    "query_type": "error_code",
+    "error_code": "20184",
+    "natural_language_query": "ABB robot error 20184, what should I do?",
+    "expected_manual_id": "abb_irb_troubleshooting",
+    "expected_section_id": "f6acc5c6-032b-4d23-829e-570626b92300",
+    "expected_pages": [
+      115,
+      115
+    ],
+    "heading_path": [
+      "20184, Incorrect argument for System Inputs"
+    ],
+    "section_type": "procedure",
+    "snippet": "20184, Incorrect argument for System Inputs\nAn undefined Start Mode has been\ndeclared for System IO."
+  },
+  {
+    "id": "v2_003",
+    "query_type": "error_code",
+    "error_code": "20506",
+    "natural_language_query": "ABB robot error 20506, what should I do?",
+    "expected_manual_id": "abb_irb_troubleshooting",
+    "expected_section_id": "28b2ef54-40c0-4e8e-b4ba-387cd99cb7b5",
+    "expected_pages": [
+      139,
+      139
+    ],
+    "heading_path": [
+      "20506, Test Stop open"
+    ],
+    "section_type": "procedure",
+    "snippet": "20506, Test Stop open\nThe Test Mode Safeguarded Stop circuit has been broken."
+  },
+  {
+    "id": "v2_004",
+    "query_type": "error_code",
+    "error_code": "37044",
+    "natural_language_query": "ABB robot error 37044, what should I do?",
+    "expected_manual_id": "abb_irb_troubleshooting",
+    "expected_section_id": "6909088f-5bb8-4066-9667-9e1deadd0c4f",
+    "expected_pages": [
+      161,
+      161
+    ],
+    "heading_path": [
+      "37044, Overload on Panel Board digital output"
+    ],
+    "section_type": "procedure",
+    "snippet": "37044, Overload on Panel Board digital output"
+  },
+  {
+    "id": "v2_005",
+    "query_type": "error_code",
+    "error_code": "40074",
+    "natural_language_query": "ABB robot error 40074, what should I do?",
+    "expected_manual_id": "abb_irb_troubleshooting",
+    "expected_section_id": "87e11d8e-675a-44a1-b536-30eef5f84bea",
+    "expected_pages": [
+      196,
+      197
+    ],
+    "heading_path": [
+      "40074, Reference error"
+    ],
+    "section_type": "procedure",
+    "snippet": "40074, Reference error\narg\nnot entire data reference\nThe specified name identifies an object\nother than data. Check if the desired\n195\ndata is hidden by some other object with\nthe same name."
+  },
+  {
+    "id": "v2_006",
+    "query_type": "error_code",
+    "error_code": "40196",
+    "natural_language_query": "How do I fix ABB robot error 40196?",
+    "expected_manual_id": "abb_irb_troubleshooting",
+    "expected_section_id": "8d2d8df8-f06f-44f1-aea6-38091c365228",
+    "expected_pages": [
+      206,
+      206
+    ],
+    "heading_path": [
+      "40196, Instruction error"
+    ],
+    "section_type": "procedure",
+    "snippet": "40196, Instruction error\nTask arg: Attempt to\nexecute place holder\nRemove the place holder or the\ninstruction containing it, or make the\ninstruction complete. Then continue\nexecution."
+  },
+  {
+    "id": "v2_007",
+    "query_type": "error_code",
+    "error_code": "40721",
+    "natural_language_query": "Troubleshooting steps for ABB error 40721",
+    "expected_manual_id": "abb_irb_troubleshooting",
+    "expected_section_id": "6aa5fd27-180a-4114-a34b-a59d29dcca33",
+    "expected_pages": [
+      231,
+      231
+    ],
+    "heading_path": [
+      "40721, IO Installation"
+    ],
+    "section_type": "procedure",
+    "snippet": "40721, IO Installation\nTask arg:\nThe system could not refresh all IO signals as RAPID symbols."
+  },
+  {
+    "id": "v2_008",
+    "query_type": "error_code",
+    "error_code": "41508",
+    "natural_language_query": "Troubleshooting steps for ABB error 41508",
+    "expected_manual_id": "abb_irb_troubleshooting",
+    "expected_section_id": "2579f87e-4cab-4b0a-98ae-cd7fb1ec910e",
+    "expected_pages": [
+      253,
+      253
+    ],
+    "heading_path": [
+      "41508, LoadId Error"
+    ],
+    "section_type": "procedure",
+    "snippet": "41508, LoadId Error\nTask: arg\nLoad Identification is not available for this robot type.\nProgram Ref. arg\nCheck next Event Log message, for the next user action to do."
+  },
+  {
+    "id": "v2_009",
+    "query_type": "error_code",
+    "error_code": "41721",
+    "natural_language_query": "Troubleshooting steps for ABB error 41721",
+    "expected_manual_id": "abb_irb_troubleshooting",
+    "expected_section_id": "7616aee3-b46e-48b4-8539-d321efd19866",
+    "expected_pages": [
+      277,
+      277
+    ],
+    "heading_path": [
+      "41721, Invalid Argument"
+    ],
+    "section_type": "procedure",
+    "snippet": "41721, Invalid Argument\nTask: arg\nThe type arg in argument arg is invalid.\nProgram Ref: arg\nChange the type to a valid one (arg)."
+  },
+  {
+    "id": "v2_010",
+    "query_type": "error_code",
+    "error_code": "71045",
+    "natural_language_query": "Troubleshooting steps for ABB error 71045",
+    "expected_manual_id": "abb_irb_troubleshooting",
+    "expected_section_id": "2792fec5-bde9-400e-a693-11cabd1f5f62",
+    "expected_pages": [
+      316,
+      316
+    ],
+    "heading_path": [
+      "71045, Invalid filter specification"
+    ],
+    "section_type": "procedure",
+    "snippet": "71045, Invalid filter specification\nThe I/O configuration for I/O signal <arg> is invalid.\nNo filter times can be specified for this type of I/O signal.\nThis I/O signal has been rejected.\nSet filter t"
+  },
+  {
+    "id": "v2_011",
+    "query_type": "error_code",
+    "error_code": "71340",
+    "natural_language_query": "Troubleshooting steps for ABB error 71340",
+    "expected_manual_id": "abb_irb_troubleshooting",
+    "expected_section_id": "5eefa253-31c3-433a-a18d-4e1cfb4564fe",
+    "expected_pages": [
+      331,
+      331
+    ],
+    "heading_path": [
+      "71340, Invalid I/O unit"
+    ],
+    "section_type": "procedure",
+    "snippet": "71340, Invalid I/O unit\nThe I/O configuration is invalid.\nOne of the fieldbus commands has a reference to an invalid/unknown\nI/O unit <arg>.\nAll fieldbus commands must have a reference to an existing "
+  },
+  {
+    "id": "v2_012",
+    "query_type": "error_code",
+    "error_code": "110634",
+    "natural_language_query": "What does ABB IRB error 110634 mean?",
+    "expected_manual_id": "abb_irb_troubleshooting",
+    "expected_section_id": "88f06ebb-1c9f-404c-9776-72761b7c98b5",
+    "expected_pages": [
+      370,
+      370
+    ],
+    "heading_path": [
+      "110634, Spot application cfg data limit error"
+    ],
+    "section_type": "procedure",
+    "snippet": "110634, Spot application cfg data limit error\nTask: arg\nThe data value is outside the limit.\nChange the value."
+  },
+  {
+    "id": "v2_013",
+    "query_type": "error_code",
+    "error_code": "110713",
+    "natural_language_query": "How do I fix ABB robot error 110713?",
+    "expected_manual_id": "abb_irb_troubleshooting",
+    "expected_section_id": "822d152d-0a99-4dfc-90e2-84c5f1297241",
+    "expected_pages": [
+      378,
+      378
+    ],
+    "heading_path": [
+      "110713, No current, weld 1 to 3."
+    ],
+    "section_type": "procedure",
+    "snippet": "110713, No current, weld 1 to 3.\nTask:arg\narg\nElectrodes not closed - no electrical contact at the point to be welded -\ncontamination of sheets - use of sealant.\nCheck closing mechanisms (robot, machi"
+  },
+  {
+    "id": "v2_014",
+    "query_type": "error_code",
+    "error_code": "111801",
+    "natural_language_query": "Troubleshooting steps for ABB error 111801",
+    "expected_manual_id": "abb_irb_troubleshooting",
+    "expected_section_id": "fb0eac2a-42db-407d-88f0-c8754d2aa042",
+    "expected_pages": [
+      397,
+      397
+    ],
+    "heading_path": [
+      "111801, Illegal Schedule Number"
+    ],
+    "section_type": "procedure",
+    "snippet": "111801, Illegal Schedule Number\nTask:arg\nContext: arg\narg is not a valid schedule number.\nArcitune only allows schedules 1 to 99."
+  },
+  {
+    "id": "v2_015",
+    "query_type": "error_code",
+    "error_code": "112434",
+    "natural_language_query": "Troubleshooting steps for ABB error 112434",
+    "expected_manual_id": "abb_irb_troubleshooting",
+    "expected_section_id": "a67b190f-f9b7-46c5-b55c-d4a62c6e13db",
+    "expected_pages": [
+      420,
+      420
+    ],
+    "heading_path": [
+      "112434, Incompatible weld data format"
+    ],
+    "section_type": "procedure",
+    "snippet": "112434, Incompatible weld data format\nI/O unit: arg\nError code: arg\nInternal unit: arg"
+  },
+  {
+    "id": "v2_016",
+    "query_type": "error_code",
+    "error_code": "134134",
+    "natural_language_query": "What does ABB IRB error 134134 mean?",
+    "expected_manual_id": "abb_irb_troubleshooting",
+    "expected_section_id": "116f8c00-900a-40fc-89ca-e7dda64b407a",
+    "expected_pages": [
+      453,
+      454
+    ],
+    "heading_path": [
+      "134134, Gripper open failed."
+    ],
+    "section_type": "procedure",
+    "snippet": "134134, Gripper open failed.\nTimeout while waiting for sensor feedback.\n452\nCheck that gripper sensors are working."
+  },
+  {
+    "id": "v2_017",
+    "query_type": "error_code",
+    "error_code": "SV5197",
+    "natural_language_query": "Fanuc Series 0 alarm SV5197, recommended action?",
+    "expected_manual_id": "fanuc_series0m_maintenance",
+    "expected_section_id": "4ce3f0a7-3139-446e-b1c4-beca6be10242",
+    "expected_pages": [
+      406,
+      406
+    ],
+    "heading_path": [
+      "Causes and Countermeasures"
+    ],
+    "section_type": "narrative",
+    "snippet": "Causes and Countermeasures\nThese alarms are issued due to a failure in the optical cable, axis card, or a slave such as a servo amplifier\nconnected to the FSSB.\nNo.\nMessage\nDescription\nSV5134\nFSSB:OPE"
+  },
+  {
+    "id": "v2_018",
+    "query_type": "error_code",
+    "error_code": "DS1450",
+    "natural_language_query": "How do I clear Fanuc CNC alarm DS1450?",
+    "expected_manual_id": "fanuc_series0m_maintenance",
+    "expected_section_id": "e3d6a40f-aeb6-4c50-bb1b-0acedde7236c",
+    "expected_pages": [
+      487,
+      491
+    ],
+    "heading_path": [
+      "APPENDIX",
+      "(11) Other alarms (DS alarm)"
+    ],
+    "section_type": "narrative",
+    "snippet": "(11) Other alarms (DS alarm)\nNumber\nMessage\nDescription\nDS0001\nSYNC EXCESS ERROR (POS DEV)\nIn feed axis control , the difference in the amount of\npositional deviation between the master and slave axes"
+  },
+  {
+    "id": "v2_019",
+    "query_type": "error_code",
+    "error_code": "COM-12",
+    "natural_language_query": "What does LS S100 RAPIEnet parameter COM-12 configure?",
+    "expected_manual_id": "ls_s100_rapienet_user",
+    "expected_section_id": "a5d1ab71-f3e7-43e2-96c0-4e6f5a0d83e8",
+    "expected_pages": [
+      14,
+      14
+    ],
+    "heading_path": [
+      "communication board",
+      "Protocol"
+    ],
+    "section_type": "narrative",
+    "snippet": "Protocol\nCNF-30\n*1\nOption-1 Type\n-\n-\nDisplays the name of the\ncommunication option board\ninstalled. 'RAPIEnet+'\n(Depending on the inverter OS\nversion, it may be displayed as\nReserved-18 instead of\nRAP"
+  },
+  {
+    "id": "v2_020",
+    "query_type": "error_code",
+    "error_code": "A.47",
+    "natural_language_query": "Mitsubishi servo amp alarm A.47 — cause and remedy?",
+    "expected_manual_id": "mitsubishi_servo_amp_instruction",
+    "expected_section_id": "bf0fef41-c58e-4a19-af31-52dd5c446cae",
+    "expected_pages": [
+      151,
+      151
+    ],
+    "heading_path": [
+      "Alarm",
+      "Cycling the power"
+    ],
+    "section_type": "narrative",
+    "snippet": "Cycling the power\nA.10\nUndervoltage\n\n\nA.12\nMemory error 1 (RAM)\n\n\nA.15\nMemory error 2 (EEP-ROM)\n\n\nA.17\nBoard error\n\n\nA.19\nMemory error 3 (Flash-ROM)\n\n\nA.30\nRegenerative error\n *1\n *1\nA.33\n"
+  },
+  {
+    "id": "v2_021",
+    "query_type": "error_code",
+    "error_code": "F073",
+    "natural_language_query": "Allen-Bradley drive code F073, what to do?",
+    "expected_manual_id": "rockwell_powerflex520_user",
+    "expected_section_id": "1a78024f-48cb-4917-b1b5-94f20a98ad13",
+    "expected_pages": [
+      162,
+      162
+    ],
+    "heading_path": [
+      "Fault Types, Descriptions, and Actions",
+      "Chapter 4          Troubleshooting"
+    ],
+    "section_type": "narrative",
+    "snippet": "Chapter 4          Troubleshooting\nF041\nPhase UV Short\n2\nExcessive current has been\ndetected between these two\noutput terminals.\n• Check the motor and drive output\nterminal wiring for a shorted\ncondit"
+  },
+  {
+    "id": "v2_022",
+    "query_type": "error_code",
+    "error_code": "OLF",
+    "natural_language_query": "Schneider ATV320 fault OLF — cause?",
+    "expected_manual_id": "schneider_atv320_programming",
+    "expected_section_id": "c165d9eb-3282-421a-8f67-562382cb5c6e",
+    "expected_pages": [
+      50,
+      65,
+      68,
+      311
+    ],
+    "heading_path": [
+      "Fault Codes",
+      "OLF"
+    ],
+    "section_type": "table",
+    "snippet": "OLF\n[Motor overload]\n• Triggered by excessive motor current.\n• Check the setting of the motor thermal protection, check the motor load. Wait for the motor to cool down before restarting."
+  },
+  {
+    "id": "v2_023",
+    "query_type": "error_code",
+    "error_code": "1200",
+    "natural_language_query": "Siemens S7 diagnostics — code 1200 meaning?",
+    "expected_manual_id": "siemens_s7_diagnostics",
+    "expected_section_id": "5c86e17f-4931-469c-bae4-b65e6623fed7",
+    "expected_pages": [
+      1,
+      2
+    ],
+    "heading_path": [
+      "TIA Portal, SIMATIC S7-1200, SIMATIC S7-1500"
+    ],
+    "section_type": "procedure",
+    "snippet": "TIA Portal, SIMATIC S7-1200, SIMATIC S7-1500\nhttps://support.industry.siemens.com/cs/ww/en/view/109752283\nSiemens\nIndustry\nOnline\nSupport\nLegal information\n2"
+  },
+  {
+    "id": "v2_024",
+    "query_type": "error_code",
+    "error_code": "rr",
+    "natural_language_query": "Yaskawa GA700 fault rr — meaning?",
+    "expected_manual_id": "yaskawa_ga700_technical",
+    "expected_section_id": "f72fe39d-82b0-4610-baf4-10a7e07b6a4d",
+    "expected_pages": [
+      243,
+      243
+    ],
+    "heading_path": [
+      "Monitor data can only be read.",
+      "Description"
+    ],
+    "section_type": "narrative",
+    "snippet": "Description\n0020\nDrive status 1\nbit 0\nDuring Run\n1: During run, 0: During stop\nbit 1\nDuring Reverse\n1: During reverse, 0: Forward run\nbit 2\nDrive ready\n1: Ready, 0: Not ready\nbit 3\nFault\n1: Fault\nbit "
+  },
+  {
+    "id": "v2_025",
+    "query_type": "error_code",
+    "error_code": "Er-21",
+    "natural_language_query": "GA700 drive alarm Er-21, what to do?",
+    "expected_manual_id": "yaskawa_ga700_technical",
+    "expected_section_id": "8a0c2976-4a84-4fd8-8c32-676d418ee907",
+    "expected_pages": [
+      269,
+      269
+    ],
+    "heading_path": [
+      "6.3 List of Fault, Minor Fault, Alarm, and Error Codes",
+      "Type"
+    ],
+    "section_type": "narrative",
+    "snippet": "Type\nRef.\nEr-08\nRated Slip Error\nFlashing\nAuto-Tuning Errors\n317\nEr-09\nAcceleration Error\nFlashing\nAuto-Tuning Errors\n317\nEr-10\nMotor Direction Error\nFlashing\nAuto-Tuning Errors\n317\nEr-11\nMotor Speed "
+  }
+]

@@ -20,6 +20,8 @@ class ManualService:
         # 1. 카테고리가 입력되었을 때만 DB 조회 실행
         if category:
             manuals = manual_repository.get_manuals_by_category(db, category=category)
+        else:
+            manuals = manual_repository.get_manuals(db)
         
         # 2. 결과가 빈 리스트이거나 카테고리가 없는 경우 AI 서버로 전환
         if not manuals:
@@ -61,7 +63,10 @@ class ManualService:
             raise HTTPException(status_code=404, detail="매뉴얼을 찾을 수 없습니다.")
         
         # 2. 실제 파일 경로 확인 (DB에는 파일 시스템 경로가 저장되어 있다고 가정)
-        file_path = config.MANUAL_URL + manual.file_url  # 예: "/data/manuals/m101_v1.pdf"
+        if os.path.isabs(manual.file_url):
+            file_path = manual.file_url
+        else:
+            file_path = os.path.join("/code/static/data", manual.file_url)
         
         if not os.path.exists(file_path):
             raise HTTPException(status_code=404, detail="실제 매뉴얼 파일이 서버에 존재하지 않습니다.")

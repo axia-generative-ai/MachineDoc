@@ -1,8 +1,8 @@
 """Ingest all manuals in data/manuals/ into the vectorstore.
 
 Reads `data/error_codes.json` to discover (manual_filename -> equipment_id)
-mappings, then chunks → embeds → inserts. Uses the same provider
-abstractions as the live API path.
+mappings, then delegates each PDF to `app.services.ingest_service.ingest_pdf`
+so the CLI and any future upload endpoint share one ingest core.
 
 Run (after init_db.py):
     uv run python scripts/ingest_manuals.py
@@ -16,8 +16,7 @@ import time
 from pathlib import Path
 
 from app.core.vectorstore import VectorStore
-from app.pipelines.chunking import chunk_pdf
-from app.pipelines.embedding import embed_chunks
+from app.services.ingest_service import ingest_pdf
 
 ROOT = Path(__file__).resolve().parents[1]
 MANUAL_DIR = ROOT / "data" / "manuals"
@@ -50,14 +49,15 @@ def main() -> None:
         if not equipment_id:
             log.warning("skipping %s — not in error_codes mapping", pdf.name)
             continue
-        manual_id = pdf.stem
-        log.info("chunking %s (equipment=%s)", pdf.name, equipment_id)
-        chunks = chunk_pdf(pdf, manual_id=manual_id, equipment_id=equipment_id)
-        log.info("  -> %d chunks; embedding...", len(chunks))
-        pairs = embed_chunks(chunks)
-        inserted = store.insert_chunks(pairs)
-        log.info("  -> inserted %d", inserted)
-        total_chunks += inserted
+        log.info("ingesting %s (equipment=%s)", pdf.name, equipment_id)
+        result = ingest_pdf(
+            pdf,
+            manual_id=pdf.stem,
+            equipment_id=equipment_id,
+            store=store,
+        )
+        log.info("  -> inserted %d chunks in %.1fs", result.chunks_inserted, result.elapsed_s)
+        total_chunks += result.chunks_inserted
 
     elapsed = time.perf_counter() - start
     log.info(
