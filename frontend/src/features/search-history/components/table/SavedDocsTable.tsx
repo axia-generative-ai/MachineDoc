@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { Download, FileText } from 'lucide-react';
 
 import { manualApi, type RelatedManual } from '../../../error-search/infra/manual.api';
+import { SearchHistoryPagination } from './SearchHistoryPagination';
+
+const PAGE_SIZE = 10;
 
 function formatTimestamp(iso: string): string {
   if (!iso) return '-';
@@ -15,6 +18,7 @@ export function SavedDocsTable() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [openingId, setOpeningId] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     let cancelled = false;
@@ -45,7 +49,11 @@ export function SavedDocsTable() {
     }
   };
 
+  const start = (page - 1) * PAGE_SIZE;
+  const pagedItems = items.slice(start, start + PAGE_SIZE);
+
   return (
+    <>
     <div className="mt-5 overflow-hidden rounded-2xl border border-slate-700/80 bg-slate-950/25">
       <div className="grid grid-cols-[180px_1fr_120px_120px_140px] border-b border-slate-700/80 bg-slate-900/60 px-6 py-4 text-[14px] font-black text-slate-400 max-lg:hidden">
         <span>저장 일시</span>
@@ -65,7 +73,7 @@ export function SavedDocsTable() {
         </p>
       ) : (
         <div className="divide-y divide-slate-800/90">
-          {items.map((item) => (
+          {pagedItems.map((item) => (
             <article
               key={item.manualId}
               className="grid gap-3 px-5 py-5 transition hover:bg-blue-500/[0.04] lg:grid-cols-[180px_1fr_120px_120px_140px] lg:items-center lg:px-6"
@@ -106,5 +114,7 @@ export function SavedDocsTable() {
         </div>
       )}
     </div>
+    <SearchHistoryPagination currentPage={page} pageSize={PAGE_SIZE} totalItems={items.length} onPageChange={setPage} />
+    </>
   );
 }

@@ -2,6 +2,7 @@ import { RefreshCw, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { Panel } from '../../../shared/ui/Panel';
+import { SearchHistoryPagination } from '../../search-history/components/table/SearchHistoryPagination';
 import type { AlertLogItem, ReadStatus } from '../infra/alertLog.api';
 import { AlertBadge } from './AlertBadge';
 
@@ -9,22 +10,40 @@ const READ_STATUS_OPTIONS: ReadStatus[] = ['미확인', '확인', '완료'];
 
 function formatTimestamp(iso: string): string {
   if (!iso) return '-';
+
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;
+
   return date.toLocaleString('ko-KR', { hour12: false });
 }
 
 type Props = {
   items: AlertLogItem[];
+  totalItems: number;
+  currentPage: number;
+  pageSize: number;
   isLoading: boolean;
   errorMessage: string | null;
   busyId: number | null;
   filterLabel: string;
   onReload: () => void;
+  onPageChange: (page: number) => void;
   onUpdateStatus: (notificationId: number, isRead: ReadStatus) => void;
 };
 
-export function AlertLogTable({ items, isLoading, errorMessage, busyId, filterLabel, onReload, onUpdateStatus }: Props) {
+export function AlertLogTable({
+  items,
+  totalItems,
+  currentPage,
+  pageSize,
+  isLoading,
+  errorMessage,
+  busyId,
+  filterLabel,
+  onReload,
+  onPageChange,
+  onUpdateStatus,
+}: Props) {
   const navigate = useNavigate();
 
   const handleRowSearch = (item: AlertLogItem) => {
@@ -36,7 +55,7 @@ export function AlertLogTable({ items, isLoading, errorMessage, busyId, filterLa
   return (
     <Panel className="overflow-x-auto px-5 py-4">
       <div className="mb-4 flex items-center justify-end gap-3 px-2 text-[13px] font-bold text-slate-400">
-        <span>총 {items.length}건</span>
+        <span>총 {totalItems}건</span>
         <button
           type="button"
           onClick={onReload}
@@ -48,11 +67,7 @@ export function AlertLogTable({ items, isLoading, errorMessage, busyId, filterLa
         </button>
       </div>
 
-      {errorMessage && (
-        <p className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-[14px] font-bold text-red-300">
-          {errorMessage}
-        </p>
-      )}
+      {errorMessage && <p className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-[14px] font-bold text-red-300">{errorMessage}</p>}
 
       <div className="min-w-[1180px]">
         <div className="grid grid-cols-[180px_120px_180px_1fr_140px_140px_120px] items-center border-b border-slate-700/80 px-7 py-4 text-[15px] font-black text-slate-400">
@@ -67,19 +82,22 @@ export function AlertLogTable({ items, isLoading, errorMessage, busyId, filterLa
 
         {isLoading ? (
           <p className="px-7 py-12 text-center text-[14px] font-bold text-slate-400">불러오는 중...</p>
-        ) : items.length === 0 ? (
+        ) : totalItems === 0 ? (
           <p className="px-7 py-12 text-center text-[14px] font-bold text-slate-500">
             {filterLabel === '전체' ? '알림 이력이 없습니다.' : `'${filterLabel}' 등급 알림이 없습니다.`}
           </p>
         ) : (
           <div className="divide-y divide-slate-800/90">
             {items.map((row) => {
-              const canSearch = !!row.suggestedErrorCode;
+              const canSearch = Boolean(row.suggestedErrorCode);
+
               return (
                 <article
                   key={row.notificationId}
                   onClick={() => canSearch && handleRowSearch(row)}
-                  className={`grid grid-cols-[180px_120px_180px_1fr_140px_140px_120px] items-center px-7 py-4 text-[15px] font-semibold text-slate-200 transition ${canSearch ? 'cursor-pointer hover:bg-blue-500/[0.05]' : ''}`}
+                  className={`grid grid-cols-[180px_120px_180px_1fr_140px_140px_120px] items-center px-7 py-4 text-[15px] font-semibold text-slate-200 transition ${
+                    canSearch ? 'cursor-pointer hover:bg-blue-500/[0.05]' : ''
+                  }`}
                   title={canSearch ? `클릭 시 ${row.suggestedErrorCode} 검색` : ''}
                 >
                   <span className="text-slate-300">{formatTimestamp(row.occurredAt)}</span>
@@ -128,6 +146,8 @@ export function AlertLogTable({ items, isLoading, errorMessage, busyId, filterLa
           </div>
         )}
       </div>
+
+      <SearchHistoryPagination currentPage={currentPage} pageSize={pageSize} totalItems={totalItems} onPageChange={onPageChange} />
     </Panel>
   );
 }

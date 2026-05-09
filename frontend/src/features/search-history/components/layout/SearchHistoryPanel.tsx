@@ -1,16 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Panel } from '../../../../shared/ui/Panel';
 import { searchHistoryApi, type SearchHistoryItem } from '../../infra/searchHistory.api';
+import { SearchHistoryFilters } from '../filters/SearchHistoryFilters';
+import { SearchHistoryTabs } from '../filters/SearchHistoryTabs';
 import { ActionLogTable } from '../table/ActionLogTable';
 import { SavedDocsTable } from '../table/SavedDocsTable';
-import { SearchHistoryFilters } from '../filters/SearchHistoryFilters';
 import { SearchHistoryPagination } from '../table/SearchHistoryPagination';
 import { SearchHistoryTable } from '../table/SearchHistoryTable';
-import { SearchHistoryTabs } from '../filters/SearchHistoryTabs';
 
 export type HistoryTab = '검색 이력' | '조치 이력' | '저장 문서';
+
+const PAGE_SIZE = 10;
 
 const PATH_TO_TAB: Record<string, HistoryTab> = {
   '/search-history': '검색 이력',
@@ -29,6 +31,10 @@ export function SearchHistoryPanel() {
   const location = useLocation();
   const initialTab = PATH_TO_TAB[location.pathname] ?? '검색 이력';
   const [activeTab, setActiveTab] = useState<HistoryTab>(initialTab);
+  const [page, setPage] = useState(1);
+  const [items, setItems] = useState<SearchHistoryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const next = PATH_TO_TAB[location.pathname];
@@ -36,22 +42,26 @@ export function SearchHistoryPanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab]);
+
   const handleTabChange = (tab: HistoryTab) => {
     setActiveTab(tab);
     const target = TAB_TO_PATH[tab];
     if (target && location.pathname !== target) navigate(target);
   };
-  const [items, setItems] = useState<SearchHistoryItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (activeTab !== '검색 이력') return;
+
     let cancelled = false;
+
     setIsLoading(true);
     setErrorMessage(null);
+
     searchHistoryApi
-      .listMine({ limit: 50 })
+      .listMine({ limit: 200 })
       .then((data) => {
         if (!cancelled) setItems(data);
       })
@@ -61,10 +71,16 @@ export function SearchHistoryPanel() {
       .finally(() => {
         if (!cancelled) setIsLoading(false);
       });
+
     return () => {
       cancelled = true;
     };
   }, [activeTab]);
+
+  const pagedItems = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return items.slice(start, start + PAGE_SIZE);
+  }, [items, page]);
 
   return (
     <Panel className="p-5 md:p-6">
@@ -72,8 +88,8 @@ export function SearchHistoryPanel() {
       {activeTab === '검색 이력' && (
         <>
           <SearchHistoryFilters />
-          <SearchHistoryTable items={items} isLoading={isLoading} errorMessage={errorMessage} />
-          <SearchHistoryPagination />
+          <SearchHistoryTable items={pagedItems} isLoading={isLoading} errorMessage={errorMessage} />
+          <SearchHistoryPagination currentPage={page} pageSize={PAGE_SIZE} totalItems={items.length} onPageChange={setPage} />
         </>
       )}
       {activeTab === '조치 이력' && <ActionLogTable />}

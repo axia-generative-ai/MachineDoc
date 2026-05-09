@@ -40,6 +40,7 @@ type BackendActionLog = {
 export const actionLogApi = {
   async listMine(limit = 50): Promise<ActionLogItem[]> {
     const { data } = await apiClient.get<BackendActionLogWithHistory[]>('/search/actions', { params: { limit } });
+
     return data.map((row) => ({
       actionLogId: row.action_log_id,
       historyId: row.history_id,
@@ -59,6 +60,7 @@ export const actionLogApi = {
       comment: body.comment ?? null,
       duration: body.duration ?? null,
     });
+
     return {
       actionLogId: data.action_log_id,
       historyId: data.history_id,
