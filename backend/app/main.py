@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.db.session import engine
 from app.db.base import Base
 
-from app.api.v1.endpoints import auth, users, search, manual, log, notification, websocket
+from app.api.v1.endpoints import dashboard, auth, users, search, manual, log, notification, websocket
 
 app = FastAPI(title="FactoryGuard API",
     description="스마트 팩토리 보안 및 관리 시스템을 위한 백엔드 API 문서입니다.",
@@ -19,6 +19,8 @@ app.add_middleware(
 )
 
 Base.metadata.create_all(bind=engine)
+
+app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["대시보드"])
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["인증"])
 
