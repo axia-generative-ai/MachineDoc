@@ -1,35 +1,5 @@
 import { apiClient } from '../../../shared/api/apiClient';
-
-export type DashboardStats = {
-  todayErrorCount: number;
-  yesterdayErrorCount: number;
-  unhandledNotificationCount: number;
-  totalNotificationCount: number;
-  avgActionDurationMinutes: number | null;
-  actionGoalMinutes: number;
-  manualCount: number;
-  errorCodeCount: number;
-};
-
-export type DashboardHourlyPoint = {
-  hour: string;
-  count: number;
-};
-
-export type DashboardAnomalyDigest = {
-  notificationId: number;
-  title: string;
-  level: '긴급' | '경고' | '주의';
-  meta: string;
-  occurredAt: string;
-  equipmentCode: string;
-};
-
-export type DashboardSummary = {
-  stats: DashboardStats;
-  hourlyTrend: DashboardHourlyPoint[];
-  anomalyDigest: DashboardAnomalyDigest[];
-};
+import type { DashboardAnomalyDigest, DashboardAnomalyLevel, DashboardHourlyPoint, DashboardStats, DashboardSummary } from '../model/dashboard.types';
 
 type BackendDashboardSummary = {
   stats: DashboardStats;
@@ -37,27 +7,38 @@ type BackendDashboardSummary = {
   anomaly_digest: {
     notification_id: number;
     title: string;
-    level: DashboardAnomalyDigest['level'];
+    level: DashboardAnomalyLevel | string;
     meta: string;
     occurred_at: string;
     equipment_code: string;
   }[];
 };
 
+function mapAnomalyLevel(level: string): DashboardAnomalyLevel {
+  if (level === '긴급' || level.toUpperCase() === 'URGENT') return '긴급';
+  if (level === '경고' || level.toUpperCase() === 'WARNING' || level.toUpperCase() === 'WARN') return '경고';
+  return '주의';
+}
+
+function mapAnomalyDigest(row: BackendDashboardSummary['anomaly_digest'][number]): DashboardAnomalyDigest {
+  return {
+    notificationId: row.notification_id,
+    title: row.title,
+    level: mapAnomalyLevel(row.level),
+    meta: row.meta,
+    occurredAt: row.occurred_at,
+    equipmentCode: row.equipment_code,
+  };
+}
+
 export const dashboardApi = {
   async getSummary(): Promise<DashboardSummary> {
     const { data } = await apiClient.get<BackendDashboardSummary>('/dashboard/summary');
+
     return {
       stats: data.stats,
       hourlyTrend: data.hourly_trend,
-      anomalyDigest: data.anomaly_digest.map((row) => ({
-        notificationId: row.notification_id,
-        title: row.title,
-        level: row.level,
-        meta: row.meta,
-        occurredAt: row.occurred_at,
-        equipmentCode: row.equipment_code,
-      })),
+      anomalyDigest: data.anomaly_digest.map(mapAnomalyDigest),
     };
   },
 };

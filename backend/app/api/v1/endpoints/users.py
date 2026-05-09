@@ -83,7 +83,12 @@ def update_user(
     - 수정이 필요한 필드만 데이터에 포함하여 요청하세요.
     - 존재하지 않는 user_id인 경우 404 에러를 반환합니다.
     """
-    return user_service.update_user_info(db, user_id=user_id, obj_in=obj_in)
+    return user_service.update_user_info(
+        db,
+        user_id=user_id,
+        obj_in=obj_in,
+        admin_user_id=admin_user.user_id,
+    )
 
 @router.delete(
     "/{user_id}",

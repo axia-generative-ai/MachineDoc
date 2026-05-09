@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
 import { AlertTriangle, BookOpen } from 'lucide-react';
 
-import { dashboardApi } from '../../dashboard/infra/dashboard.api';
+import { useDashboardSummary } from '../../dashboard/hooks/useDashboardSummary';
 import { adminStatColorClasses, type AdminStatColor } from '../model/adminTheme';
 
 type AdminStat = {
@@ -13,39 +12,26 @@ type AdminStat = {
 };
 
 export function AdminStatsGrid() {
-  const [stats, setStats] = useState<AdminStat[]>([]);
+  const { summary } = useDashboardSummary();
 
-  useEffect(() => {
-    let cancelled = false;
-    dashboardApi
-      .getSummary()
-      .then((data) => {
-        if (cancelled) return;
-        setStats([
-          {
-            value: String(data.stats.manualCount),
-            unit: '종',
-            label: '등록 매뉴얼',
-            icon: BookOpen,
-            color: 'green',
-          },
-          {
-            value: String(data.stats.errorCodeCount),
-            unit: '개',
-            label: '오류코드',
-            icon: AlertTriangle,
-            color: 'red',
-          },
-        ]);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setStats([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const stats: AdminStat[] = summary
+    ? [
+        {
+          value: String(summary.stats.manualCount),
+          unit: '종',
+          label: '등록 매뉴얼',
+          icon: BookOpen,
+          color: 'green',
+        },
+        {
+          value: String(summary.stats.errorCodeCount),
+          unit: '개',
+          label: '오류코드',
+          icon: AlertTriangle,
+          color: 'red',
+        },
+      ]
+    : [];
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
@@ -56,7 +42,7 @@ export function AdminStatsGrid() {
         return (
           <article key={stat.label} className="flex min-h-[120px] items-center justify-between rounded-xl border border-slate-700/80 bg-slate-950/20 p-5">
             <div>
-              <p className={`text-[42px] font-black leading-none tracking-[-0.06em] ${palette.text}`}>
+              <p className={`text-[42px] font-black leading-none ${palette.text}`}>
                 {stat.value}
                 <span className="ml-1 text-[20px]">{stat.unit}</span>
               </p>

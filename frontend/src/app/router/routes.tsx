@@ -9,6 +9,7 @@ import { ErrorSearchPage } from '../../pages/ErrorSearchPage/ErrorSearchPage';
 import { ErrorSearchResultPage } from '../../pages/ErrorSearchResultPage/ErrorSearchResultPage';
 import { LoginPage } from '../../pages/LoginPage/LoginPage';
 import { SearchHistoryPage } from '../../pages/SearchHistoryPage/SearchHistoryPage';
+import { SettingsPage } from '../../pages/SettingsPage/SettingsPage';
 import { SignupPage } from '../../pages/SignupPage/SignupPage';
 
 export const routes = createBrowserRouter([
@@ -28,6 +29,7 @@ export const routes = createBrowserRouter([
       { path: 'action-history', element: <SearchHistoryPage /> },
       { path: 'saved-documents', element: <SearchHistoryPage /> },
       { path: 'admin', element: <AdminPage /> },
+      { path: 'settings', element: <SettingsPage /> },
     ],
   },
 ]);
