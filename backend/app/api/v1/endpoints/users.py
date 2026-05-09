@@ -8,7 +8,7 @@ from app.service.user_service import user_service
 router = APIRouter()
 
 @router.get(
-    "/", 
+    "/",
     summary="전체 사용자 목록 조회 (관리자 전용)",
     response_model=List[user_schema.UserRead]
 )
@@ -28,8 +28,28 @@ def read_users(
     """
     return user_service.get_user_list(db, skip=skip, limit=limit)
 
+# /pending 은 /{user_id} 보다 위에 선언해야 한다.
+# FastAPI는 라우트를 위에서부터 매칭하므로, 아래에 두면 'pending' 문자열이
+# user_id(int)로 캐스팅 시도되어 422가 난다.
+@router.get(
+    "/pending",
+    summary="승인 대기 사용자 목록 조회 (관리자 전용)",
+    response_model=List[user_schema.UserRead]
+)
+def read_pending_users(
+    db: Session = Depends(deps.get_db),
+    admin_user: User = Depends(deps.get_current_admin_user)
+):
+    """
+    관리자 권한으로 시스템 접속 승인을 기다리고 있는(**PENDING** 상태) 사용자 목록을 조회합니다.
+    - 신규 회원가입 후 아직 승인되지 않은 사용자들을 한눈에 확인할 수 있습니다.
+    - 결과는 **List[UserRead]** 형태로 반환됩니다.
+    - 권한이 없는 일반 사용자가 호출할 경우 **403 Forbidden** 에러가 발생합니다.
+    """
+    return user_service.get_pending_user_list(db)
+
 @router.patch(
-    "/me", 
+    "/me",
     summary="내 정보 수정",
     response_model=user_schema.UserRead
 )
@@ -47,7 +67,7 @@ def update_user_me(
     return user_service.update_my_info(db, current_user=current_user, obj_in=obj_in)
 
 @router.patch(
-    "/{user_id}", 
+    "/{user_id}",
     summary="사용자 정보 수정 (관리자 전용)",
     response_model=user_schema.UserRead # 반환 스키마 설정
 )
@@ -66,7 +86,7 @@ def update_user(
     return user_service.update_user_info(db, user_id=user_id, obj_in=obj_in)
 
 @router.delete(
-    "/{user_id}", 
+    "/{user_id}",
     summary="사용자 계정 삭제 (관리자 전용)",
 )
 def delete_user(
@@ -81,24 +101,7 @@ def delete_user(
     - 성공 시 삭제 완료 메시지를 반환합니다.
     """
     return user_service.delete_user_account(
-        db, 
-        target_user_id=user_id, 
+        db,
+        target_user_id=user_id,
         admin_user_id=admin_user.user_id
     )
-
-@router.get(
-    "/pending", 
-    summary="승인 대기 사용자 목록 조회 (관리자 전용)",
-    response_model=List[user_schema.UserRead]
-)
-def read_pending_users(
-    db: Session = Depends(deps.get_db),
-    admin_user: User = Depends(deps.get_current_admin_user)
-):
-    """
-    관리자 권한으로 시스템 접속 승인을 기다리고 있는(**PENDING** 상태) 사용자 목록을 조회합니다.
-    - 신규 회원가입 후 아직 승인되지 않은 사용자들을 한눈에 확인할 수 있습니다.
-    - 결과는 **List[UserRead]** 형태로 반환됩니다.
-    - 권한이 없는 일반 사용자가 호출할 경우 **403 Forbidden** 에러가 발생합니다.
-    """
-    return user_service.get_pending_user_list(db)
