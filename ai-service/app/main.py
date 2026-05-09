@@ -6,6 +6,7 @@ from fastapi import FastAPI
 
 from app.api.anomaly import router as anomaly_router
 from app.api.ingest import router as ingest_router
+from app.api.prompts import router as prompts_router
 from app.api.recommend import router as recommend_router
 from app.api.search import router as search_router
 from app.config import get_settings
@@ -30,6 +31,7 @@ app.include_router(search_router)
 app.include_router(anomaly_router)
 app.include_router(ingest_router)
 app.include_router(recommend_router)
+app.include_router(prompts_router)
 
 
 @app.on_event("startup")
