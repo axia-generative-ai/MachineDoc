@@ -1,11 +1,11 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from app.models.user import User
+from app.models.user import User, UserState
 from app.crud.crud_user import user_repository
-from app.schemas.user import UserState
 from app.crud.crud_token import token_repository
 from app.schemas.token import RefreshTokenCreate
 from app.core.security import verify_password, create_access_token, create_refresh_token
+from app.core.config import config
 from datetime import datetime, timedelta
 
 class AuthService:
@@ -35,7 +35,9 @@ class AuthService:
         refresh_token = create_refresh_token(data=token_data)
         
         # 5. 기존 리프레시 토큰이 있다면 업데이트, 없다면 새로 생성
-        expires_at = datetime.utcnow() + timedelta(days=14)
+        # JWT 의 exp 클레임과 동일하게 REFRESH_TOKEN_EXPIRE_DAYS 사용 (기본 7일).
+        # 이전엔 14d 하드코딩 → JWT 만료보다 DB 만료가 길어 검증 기준 불일치.
+        expires_at = datetime.utcnow() + timedelta(days=config.REFRESH_TOKEN_EXPIRE_DAYS)
         
         # 스키마 객체 생성
         token_in = RefreshTokenCreate(
