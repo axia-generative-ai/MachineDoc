@@ -22,6 +22,12 @@ function normalizeState(state: string): UserState {
   return 'LOGOUT';
 }
 
+const ROLE_TO_BACKEND: Record<UserRole, string> = {
+  ADMIN: '관리자',
+  ENGINEER: '엔지니어',
+  WORKER: '작업자',
+};
+
 function mapUser(user: BackendUser): User {
   return {
     id: String(user.user_id),
@@ -38,10 +44,23 @@ export const adminUserApi = {
     const { data } = await apiClient.get<BackendUser[]>('/users/pending');
     return data.map(mapUser);
   },
+  async getAllUsers() {
+    const { data } = await apiClient.get<BackendUser[]>('/users/');
+    return data.map(mapUser);
+  },
   async approveUser(userId: string) {
     const { data } = await apiClient.patch<BackendUser>(`/users/${userId}`, {
       state: '로그아웃',
     });
     return mapUser(data);
+  },
+  async updateUserRole(userId: string, role: UserRole) {
+    const { data } = await apiClient.patch<BackendUser>(`/users/${userId}`, {
+      role: ROLE_TO_BACKEND[role],
+    });
+    return mapUser(data);
+  },
+  async deleteUser(userId: string) {
+    await apiClient.delete(`/users/${userId}`);
   },
 };

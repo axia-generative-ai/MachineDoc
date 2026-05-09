@@ -129,8 +129,8 @@ export function AllUsersPanel() {
                   </option>
                 ))}
               </select>
-              <span className={`inline-flex h-7 w-fit items-center rounded-md border px-2 text-[12px] font-black ${STATE_STYLE[user.state]}`}>
-                {STATE_LABELS[user.state]}
+              <span className={`inline-flex h-7 w-fit items-center rounded-md border px-2 text-[12px] font-black ${STATE_STYLE[user.state ?? 'LOGOUT']}`}>
+                {STATE_LABELS[user.state ?? 'LOGOUT']}
               </span>
               <div className="flex justify-center">
                 <button
