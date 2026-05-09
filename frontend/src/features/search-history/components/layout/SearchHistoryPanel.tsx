@@ -1,83 +1,17 @@
-import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-
-import { Panel } from '../../../../shared/ui/Panel';
-import { searchHistoryApi, type SearchHistoryItem } from '../../infra/searchHistory.api';
-import { ActionLogTable } from '../table/ActionLogTable';
-import { SavedDocsTable } from '../table/SavedDocsTable';
+﻿import { Panel } from '../../../../shared/ui/Panel';
 import { SearchHistoryFilters } from '../filters/SearchHistoryFilters';
 import { SearchHistoryPagination } from '../table/SearchHistoryPagination';
 import { SearchHistoryTable } from '../table/SearchHistoryTable';
 import { SearchHistoryTabs } from '../filters/SearchHistoryTabs';
 
-export type HistoryTab = '검색 이력' | '조치 이력' | '저장 문서';
-
-const PATH_TO_TAB: Record<string, HistoryTab> = {
-  '/search-history': '검색 이력',
-  '/action-history': '조치 이력',
-  '/saved-documents': '저장 문서',
-};
-
-const TAB_TO_PATH: Record<HistoryTab, string> = {
-  '검색 이력': '/search-history',
-  '조치 이력': '/action-history',
-  '저장 문서': '/saved-documents',
-};
-
 export function SearchHistoryPanel() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const initialTab = PATH_TO_TAB[location.pathname] ?? '검색 이력';
-  const [activeTab, setActiveTab] = useState<HistoryTab>(initialTab);
-
-  useEffect(() => {
-    const next = PATH_TO_TAB[location.pathname];
-    if (next && next !== activeTab) setActiveTab(next);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname]);
-
-  const handleTabChange = (tab: HistoryTab) => {
-    setActiveTab(tab);
-    const target = TAB_TO_PATH[tab];
-    if (target && location.pathname !== target) navigate(target);
-  };
-  const [items, setItems] = useState<SearchHistoryItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (activeTab !== '검색 이력') return;
-    let cancelled = false;
-    setIsLoading(true);
-    setErrorMessage(null);
-    searchHistoryApi
-      .listMine({ limit: 50 })
-      .then((data) => {
-        if (!cancelled) setItems(data);
-      })
-      .catch((error) => {
-        if (!cancelled) setErrorMessage(error?.message ?? '검색 이력을 불러오지 못했습니다.');
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [activeTab]);
-
   return (
     <Panel className="p-5 md:p-6">
-      <SearchHistoryTabs activeTab={activeTab} onTabChange={handleTabChange} />
-      {activeTab === '검색 이력' && (
-        <>
-          <SearchHistoryFilters />
-          <SearchHistoryTable items={items} isLoading={isLoading} errorMessage={errorMessage} />
-          <SearchHistoryPagination />
-        </>
-      )}
-      {activeTab === '조치 이력' && <ActionLogTable />}
-      {activeTab === '저장 문서' && <SavedDocsTable />}
+      <SearchHistoryTabs />
+      <SearchHistoryFilters />
+      <SearchHistoryTable />
+      <SearchHistoryPagination />
     </Panel>
   );
 }
+

@@ -1,58 +1,31 @@
-import { useEffect, useState } from 'react';
-
-import { manualApi, type RelatedManual } from '../../infra/manual.api';
+import type { ManualSummary } from '../../infra/manual.api';
 import { RelatedManualCard } from './RelatedManualCard';
 
-type Props = {
-  category?: string;
-  equipmentCode?: string;
+type RelatedManualListProps = {
+  manuals: ManualSummary[];
+  selectedManualId?: number;
+  isLoading: boolean;
+  errorMessage: string | null;
+  onSelect: (manual: ManualSummary) => void;
 };
 
-export function RelatedManualList({ category, equipmentCode }: Props) {
-  const [manuals, setManuals] = useState<RelatedManual[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    setIsLoading(true);
-    setErrorMessage(null);
-    manualApi
-      .search({ category, equipmentCode })
-      .then((data) => {
-        if (!cancelled) setManuals(data);
-      })
-      .catch((error) => {
-        if (!cancelled) setErrorMessage(error?.message ?? '매뉴얼 목록을 불러오지 못했습니다.');
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [category, equipmentCode]);
-
+export function RelatedManualList({ manuals, selectedManualId, isLoading, errorMessage, onSelect }: RelatedManualListProps) {
   if (isLoading) {
-    return <p className="text-[14px] font-bold text-slate-400">매뉴얼을 불러오는 중...</p>;
+    return <div className="rounded-lg border border-slate-800 bg-slate-950/30 p-5 text-[15px] font-semibold text-slate-300">관련 매뉴얼을 불러오는 중입니다.</div>;
   }
 
   if (errorMessage) {
-    return (
-      <p className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-[14px] font-bold text-red-300">
-        {errorMessage}
-      </p>
-    );
+    return <div className="rounded-lg border border-red-500/30 bg-red-950/20 p-5 text-[15px] font-semibold text-red-200">{errorMessage}</div>;
   }
 
   if (manuals.length === 0) {
-    return <p className="text-[14px] font-bold text-slate-400">관련 매뉴얼이 없습니다.</p>;
+    return <div className="rounded-lg border border-slate-800 bg-slate-950/30 p-5 text-[15px] font-semibold text-slate-400">등록된 매뉴얼이 없습니다.</div>;
   }
 
   return (
     <div className="grid gap-5 lg:grid-cols-3">
       {manuals.map((manual) => (
-        <RelatedManualCard key={manual.manualId} manual={manual} />
+        <RelatedManualCard key={manual.manual_id} manual={manual} isSelected={manual.manual_id === selectedManualId} onSelect={onSelect} />
       ))}
     </div>
   );

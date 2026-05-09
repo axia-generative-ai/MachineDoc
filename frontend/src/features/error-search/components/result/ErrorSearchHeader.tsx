@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 
 export function ErrorSearchHeader() {
   const [searchParams] = useSearchParams();
-  const keyword = searchParams.get('q') || 'OPE03';
+  const keyword = searchParams.get('q') || 'E-204';
 
   return (
     <div className="mb-6">
