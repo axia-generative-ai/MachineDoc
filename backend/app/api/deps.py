@@ -4,7 +4,7 @@ from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 from app.core.config import config
 from app.crud.crud_user import user_repository
-from app.models.user import User, UserRole
+from app.models.user import User, UserRole, UserState
 from app.core.database import get_db
 
 # 1. 토큰을 가져올 경로 설정
@@ -30,8 +30,17 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
     user = user_repository.get_user_by_email(db, email=email)
     if user is None:
         raise credentials_exception
-        
-    # 4. 최종적으로 유저 객체 반환
+
+    # 4. 상태 확인: 토큰이 살아있어도 PENDING/LOGOUT 사용자는 차단.
+    # 관리자가 강등하거나 로그아웃 처리한 사용자가 만료 전 토큰으로 호출 못하도록 한다.
+    if user.state != UserState.LOGIN:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="세션이 만료되었거나 비활성 상태입니다. 다시 로그인해 주세요.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # 5. 최종적으로 유저 객체 반환
     return user
 
 def get_current_admin_user(current_user: User = Depends(get_current_user)):
