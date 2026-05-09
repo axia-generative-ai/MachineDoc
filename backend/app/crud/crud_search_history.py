@@ -25,5 +25,18 @@ class CRUDSearchHistory:
             # DB 저장 자체에 문제가 생겼을 때의 예외 처리
             print(f"SearchHistory 저장 실패: {e}")
             raise e
+        
+    def create_history(self, db: Session, user_id: int, log_id: int, query: str, result: str, status: str):
+        db_history = SearchHistory(
+            user_id=user_id,
+            log_id=log_id,
+            query=query,
+            result=result,
+            status=status
+        )
+        db.add(db_history)
+        db.commit()
+        db.refresh(db_history)
+        return db_history
 
 search_history_repository = CRUDSearchHistory()

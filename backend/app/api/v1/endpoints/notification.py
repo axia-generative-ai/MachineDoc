@@ -82,7 +82,7 @@ async def change_notification_status(
 async def get_notification_detail(
     notification_id: int,
     db: Session = Depends(get_db),
-    # current_user: User = Depends(deps.get_current_user)
+    current_user: User = Depends(deps.get_current_user)
 ):
     """
     특정 알림 ID를 바탕으로 **알림 + 로그 + 설비** 정보를 단일 객체로 병합하여 반환합니다.
@@ -135,7 +135,7 @@ async def get_notifications(
     noti_level: NotificationLevel = None,
     equipment_code: str = None,
     db: Session = Depends(get_db),
-    # current_user: User = Depends(deps.get_current_user)
+    current_user: User = Depends(deps.get_current_user)
 ):
     """
     시스템의 전체 알림 목록을 최신순으로 조회합니다.
