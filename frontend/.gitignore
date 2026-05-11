@@ -57,6 +57,7 @@ desktop.ini
 # AI / Data
 # =====================
 ai-service/data/chroma_db/
+.vite/
 *.sqlite3
 *.db
 
