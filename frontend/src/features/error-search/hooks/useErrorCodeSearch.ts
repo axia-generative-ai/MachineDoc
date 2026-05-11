@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { ApiError } from '../../../shared/api/apiError';
 import { errorSearchRepositoryImpl } from '../infra/errorSearch.repository.impl';
@@ -32,6 +32,8 @@ export function useErrorCodeSearch(errorCode: string) {
     isLoading: true,
     errorMessage: null,
   });
+  // StrictMode dev 이중 effect로 backend search_history가 2건 INSERT 되는 걸 막는다.
+  const lastFetchedRef = useRef<string | null>(null);
 
   const search = async () => {
     setState({ result: null, isLoading: true, errorMessage: null });
@@ -49,11 +51,18 @@ export function useErrorCodeSearch(errorCode: string) {
   };
 
   useEffect(() => {
+    if (lastFetchedRef.current === errorCode) return;
+    lastFetchedRef.current = errorCode;
     void search();
   }, [errorCode]);
 
+  const refetch = () => {
+    lastFetchedRef.current = errorCode;
+    return search();
+  };
+
   return {
     ...state,
-    refetch: search,
+    refetch,
   };
 }
