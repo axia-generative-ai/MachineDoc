@@ -80,14 +80,13 @@ export function TopBar({ isSidebarOpen, onMenuClick }: TopBarProps) {
 
   return (
     <header
-      className={`fixed left-0 right-0 top-0 z-10 flex h-[78px] items-center border-b border-slate-800/90 bg-[#071018]/80 px-5 backdrop-blur-xl transition-[left] duration-300 ease-out lg:px-8 ${
-        isSidebarOpen ? 'lg:left-[252px]' : 'lg:left-0'
-      }`}
+      className={`fixed left-0 right-0 top-0 z-10 flex h-[78px] items-center border-b border-slate-800/90 bg-[#071018]/80 px-5 backdrop-blur-xl transition-[left] duration-300 ease-out lg:px-8 ${isSidebarOpen ? 'lg:left-[252px]' : 'lg:left-0'
+        }`}
     >
       <button
         type="button"
         onClick={onMenuClick}
-        className="mr-4 grid h-12 w-12 place-items-center rounded-xl border border-slate-700/60 bg-white/[0.03] text-slate-200 shadow-panel transition hover:border-blue-400/50 hover:text-blue-300"
+        className="mr-4 grid h-12 w-12 place-items-center rounded-xl border border-slate-700/60 bg-white/[0.03] text-slate-200 transition hover:border-blue-400/50 hover:text-blue-300"
         aria-label="사이드바 열기/닫기"
       >
         <Menu className="h-7 w-7" />
@@ -95,11 +94,10 @@ export function TopBar({ isSidebarOpen, onMenuClick }: TopBarProps) {
 
       <form
         onSubmit={handleSearchSubmit}
-        className={`flex h-12 w-full max-w-[640px] items-center gap-3 rounded-lg border px-4 shadow-panel transition ${
-          isSearchDisabled
-            ? 'cursor-not-allowed border-slate-800 bg-slate-950/40 text-slate-600 opacity-60'
-            : 'border-slate-600/80 bg-[#050b12]/80 text-slate-400 focus-within:border-blue-400/70'
-        }`}
+        className={`flex h-12 w-full max-w-[640px] items-center gap-3 rounded-lg border px-4 transition ${isSearchDisabled
+          ? 'cursor-not-allowed border-slate-800 bg-slate-950/40 text-slate-600 opacity-60'
+          : 'border-slate-600/80 bg-[#050b12]/80 text-slate-400 focus-within:border-blue-400/70'
+          }`}
       >
         <Search className="h-6 w-6 shrink-0" />
         <input
