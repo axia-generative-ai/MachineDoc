@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CheckCircle2, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -39,7 +39,7 @@ export function ActionLogModal({ historyId, query, open, onClose }: Props) {
     setSuccessMessage(null);
     const durationNum = duration.trim() === '' ? undefined : Number(duration);
     if (durationNum !== undefined && (Number.isNaN(durationNum) || durationNum < 0)) {
-      setErrorMessage('?뚯슂 ?쒓컙? 0 ?댁긽???レ옄?ъ빞 ?⑸땲??');
+      setErrorMessage('소요 시간은 0 이상의 숫자여야 합니다.');
       return;
     }
     setIsSubmitting(true);
@@ -49,20 +49,19 @@ export function ActionLogModal({ historyId, query, open, onClose }: Props) {
         comment: comment.trim() || undefined,
         duration: durationNum,
       });
-      setSuccessMessage('議곗튂 寃곌낵媛 ??λ릺?덉뒿?덈떎. ??쒕낫?쒕줈 ?대룞?⑸땲??');
-      // ?ъ슜?먭? success 硫붿떆吏瑜??좉퉸 蹂????덈룄濡?吏㏃? delay ??dashboard ?대룞.
+      setSuccessMessage('조치 결과가 저장되었습니다. 대시보드로 이동합니다.');
       setTimeout(() => {
         onClose();
         navigate('/dashboard');
       }, 800);
     } catch (error) {
       if (error instanceof ApiError) {
-        if (error.status === 401) setErrorMessage('濡쒓렇???뺣낫媛 留뚮즺?섏뿀?듬땲??');
-        else if (error.status === 403) setErrorMessage('蹂몄씤 寃???대젰?먮쭔 議곗튂瑜??낅젰?????덉뒿?덈떎.');
-        else if (error.status === 404) setErrorMessage('?대떦 寃???대젰??李얠쓣 ???놁뒿?덈떎.');
-        else setErrorMessage(error.message || '???以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.');
+        if (error.status === 401) setErrorMessage('로그인 정보가 만료되었습니다.');
+        else if (error.status === 403) setErrorMessage('본인 검색 이력에만 조치를 입력할 수 있습니다.');
+        else if (error.status === 404) setErrorMessage('해당 검색 이력을 찾을 수 없습니다.');
+        else setErrorMessage(error.message || '저장 중 오류가 발생했습니다.');
       } else {
-        setErrorMessage('???以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.');
+        setErrorMessage('저장 중 오류가 발생했습니다.');
       }
     } finally {
       setIsSubmitting(false);
@@ -78,16 +77,16 @@ export function ActionLogModal({ historyId, query, open, onClose }: Props) {
         <div className="flex items-start justify-between">
           <div>
             <p className="text-[12px] font-black tracking-[0.24em] text-blue-300">ACTION REPORT</p>
-            <h2 className="mt-2 text-[22px] font-black tracking-[-0.05em] text-white">議곗튂 寃곌낵 ?낅젰</h2>
+            <h2 className="mt-2 text-[22px] font-black tracking-[-0.05em] text-white">조치 결과 입력</h2>
             <p className="mt-1 text-[13px] font-semibold text-slate-400">
-              寃??肄붾뱶 <span className="font-mono text-blue-300">{query}</span> 쨌 history_id={historyId}
+              검색 코드 <span className="font-mono text-blue-300">{query}</span> · history_id={historyId}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="grid h-9 w-9 place-items-center rounded-lg border border-slate-700 text-slate-400 transition hover:border-red-400/70 hover:text-red-300"
-            aria-label="?リ린"
+            aria-label="닫기"
           >
             <X className="h-4 w-4" />
           </button>
@@ -101,7 +100,7 @@ export function ActionLogModal({ historyId, query, open, onClose }: Props) {
           }}
         >
           <label className="block">
-            <span className="mb-2 block text-[14px] font-semibold text-slate-400">議곗튂 ?곹깭</span>
+            <span className="mb-2 block text-[14px] font-semibold text-slate-400">조치 상태</span>
             <div className="grid grid-cols-2 gap-2">
               {ACTION_STATUS_OPTIONS.map((option) => (
                 <label
@@ -127,24 +126,24 @@ export function ActionLogModal({ historyId, query, open, onClose }: Props) {
           </label>
 
           <label className="block">
-            <span className="mb-2 block text-[14px] font-semibold text-slate-400">肄붾찘??(?좏깮)</span>
+            <span className="mb-2 block text-[14px] font-semibold text-slate-400">코멘트 (선택)</span>
             <textarea
               value={comment}
               onChange={(event) => setComment(event.target.value)}
               rows={3}
-              placeholder="議곗튂 ?댁슜쨌愿李??ы빆쨌異붽? ?먭? ?꾩슂 ??ぉ ?깆쓣 ?먯쑀濡?쾶 ?낅젰?섏꽭??"
+              placeholder="조치 내용·관찰 사항·추가 점검이 필요한 항목 등을 자유롭게 입력하세요"
               className="w-full rounded-lg border border-slate-700 bg-slate-950/30 p-3 text-[14px] font-semibold text-white outline-none focus:border-blue-400/70"
             />
           </label>
 
           <label className="block">
-            <span className="mb-2 block text-[14px] font-semibold text-slate-400">?뚯슂 ?쒓컙 (遺? ?좏깮)</span>
+            <span className="mb-2 block text-[14px] font-semibold text-slate-400">소요 시간 (분, 선택)</span>
             <input
               value={duration}
               onChange={(event) => setDuration(event.target.value)}
               type="number"
               min={0}
-              placeholder="?? 15"
+              placeholder="예: 15"
               className="h-11 w-full rounded-lg border border-slate-700 bg-slate-950/30 px-4 text-[15px] font-semibold text-white outline-none focus:border-blue-400/70"
             />
           </label>
@@ -167,7 +166,7 @@ export function ActionLogModal({ historyId, query, open, onClose }: Props) {
               onClick={onClose}
               className="h-11 flex-1 rounded-lg border border-slate-700 bg-slate-950/30 text-[14px] font-black text-slate-300 transition hover:border-slate-500 hover:text-slate-200"
             >
-              ?リ린
+              닫기
             </button>
             <button
               type="submit"
@@ -182,4 +181,3 @@ export function ActionLogModal({ historyId, query, open, onClose }: Props) {
     </div>
   );
 }
-
