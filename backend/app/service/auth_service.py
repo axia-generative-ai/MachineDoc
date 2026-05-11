@@ -1,11 +1,11 @@
 from fastapi import HTTPException, status, Response
 from sqlalchemy.orm import Session
-from app.models.user import User
+from app.models.user import User, UserState
 from app.crud.crud_user import user_repository
-from app.schemas.user import UserState
 from app.crud.crud_token import token_repository
 from app.schemas.token import RefreshTokenCreate
 from app.core.security import verify_password, create_access_token, create_refresh_token
+from app.core.config import config
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
 from app.core.config import config
@@ -57,6 +57,7 @@ class AuthService:
             "refresh_token": refresh_token,
             "token_type": "bearer",
             "user_info": {
+                "user_id": user.user_id,
                 "email": user.email,
                 "name": user.name,
                 "department": user.department,

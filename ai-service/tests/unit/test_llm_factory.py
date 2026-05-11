@@ -19,11 +19,11 @@ def _settings(**overrides) -> Settings:
     base = dict(
         llm_provider="ollama",
         ollama_base_url="http://localhost:11434",
-        ollama_model="qwen3.5:9b",
+        ollama_model="qwen2.5:3b",
         openai_api_key="sk-test",
         openai_model="gpt-4o-mini",
         embedding_provider="ollama",
-        embedding_model="bge-m3",
+        embedding_model="nomic-embed-text",
         openai_embedding_model="text-embedding-3-small",
     )
     base.update(overrides)
@@ -37,7 +37,7 @@ def test_get_llm_ollama_returns_chatollama():
 
     llm = get_llm(_settings(llm_provider="ollama"))
     assert isinstance(llm, ChatOllama)
-    assert llm.model == "qwen3.5:9b"
+    assert llm.model == "qwen2.5:3b"
 
 
 def test_get_llm_openai_returns_chatopenai():
@@ -68,7 +68,7 @@ def test_get_embeddings_ollama_returns_ollama_embeddings():
 
     emb = get_embeddings(_settings(embedding_provider="ollama"))
     assert isinstance(emb, OllamaEmbeddings)
-    assert emb.model == "bge-m3"
+    assert emb.model == "nomic-embed-text"
 
 
 def test_get_embeddings_openai_returns_openai_embeddings():

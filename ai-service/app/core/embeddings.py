@@ -2,7 +2,8 @@
 
 Counterpart to `app.core.llm`. All embedding access in this codebase must
 go through `get_embeddings()`. The pgvector column dimension is provider-
-dependent (bge-m3 = 1024, text-embedding-3-small = 1536); see AI-08.
+dependent (nomic-embed-text = 768, text-embedding-3-small = 1536; the
+deprecated bge-m3 was 1024); see AI-08.
 """
 
 from __future__ import annotations

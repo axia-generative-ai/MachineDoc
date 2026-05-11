@@ -20,17 +20,18 @@ from app.pipelines.chunking_v2 import Chunk as ChunkV2
 logger = logging.getLogger(__name__)
 
 DEFAULT_BATCH_SIZE = 32
-# Minimum *alphanumeric* length after PUA/control sanitization. bge-m3 returns
-# NaN (Ollama 500) on empty/whitespace input AND on inputs that are pure
-# punctuation/numbers like '3.1.1' — anything below this threshold has no
-# retrieval signal worth embedding.
+# Minimum *alphanumeric* length after PUA/control sanitization. Ollama
+# embedding models (originally bge-m3, now nomic-embed-text) return NaN
+# / Ollama 500 on empty/whitespace input AND on inputs that are pure
+# punctuation/numbers like '3.1.1' — anything below this threshold has
+# no retrieval signal worth embedding.
 _MIN_EMBED_ALNUM = 5
 
 
 def _sanitize_for_embedding(text: str) -> str:
     """Strip Private-Use-Area glyphs (e.g. '\\uf0b7' bullet from Symbol font)
-    and other control chars that bge-m3 can choke on, returning a clean
-    string. Keeps newlines/tabs."""
+    and other control chars that the Ollama embedding model can choke on,
+    returning a clean string. Keeps newlines/tabs."""
     out = []
     for ch in text:
         cp = ord(ch)
@@ -110,7 +111,9 @@ def embed_chunks_v2(
     """v2 counterpart of `embed_chunks` — same batching/retry semantics
     but typed for the structure-aware ChunkV2.
 
-    Two-step pre-filter prevents the bge-m3 NaN-on-Ollama-500 failure:
+    Two-step pre-filter prevents the Ollama-500 / NaN-embedding failure
+    (first observed on bge-m3, persists as a defensive measure on
+    nomic-embed-text too):
       1. Sanitize each chunk_text (strip Private-Use-Area glyphs from
          Symbol-font bullets, control chars).
       2. Drop chunks with too few alphanumeric chars (heading stubs like

@@ -1,14 +1,34 @@
-﻿import { useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import { quickSearchTags } from '../../model/errorSearchHomeData';
+import { manualApi } from '../../infra/manual.api';
 import { Panel } from '../../../../shared/ui/Panel';
 
 export function SearchHero() {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState('');
   const [hasSearchError, setHasSearchError] = useState(false);
+  const [quickTags, setQuickTags] = useState<string[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    manualApi
+      .listErrorCodeMappings()
+      .then((data) => {
+        if (cancelled) return;
+        // 매핑된 코드 중 앞에서 6개 (정렬 = code_name asc)
+        const codes = Array.from(new Set(data.map((m) => m.codeName))).slice(0, 6);
+        setQuickTags(codes);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setQuickTags([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSearch = () => {
     const nextKeyword = keyword.trim().toUpperCase();
@@ -56,7 +76,7 @@ export function SearchHero() {
               }
             }}
             className="h-full min-w-0 flex-1 bg-transparent text-left text-[20px] font-semibold text-white outline-none placeholder:text-slate-500 md:text-[24px]"
-            placeholder="예: E-204, 밸브 온도 상승, M-102"
+            placeholder="예: OPE03, F081, ALM197, AL.50"
           />
           <button
             type="button"
@@ -68,18 +88,20 @@ export function SearchHero() {
         </div>
         {hasSearchError && <p className="mt-3 text-left text-[15px] font-bold text-red-400">검색어를 입력해주세요.</p>}
 
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
-          {quickSearchTags.map((tag) => (
-            <button
-              key={tag}
-              type="button"
-              onClick={() => handleQuickSearch(tag)}
-              className="rounded-full border border-slate-700 bg-slate-950/35 px-5 py-2 text-[15px] font-bold text-slate-300 transition hover:border-blue-400/70 hover:text-blue-300"
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
+        {quickTags.length > 0 && (
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            {quickTags.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => handleQuickSearch(tag)}
+                className="rounded-full border border-slate-700 bg-slate-950/35 px-5 py-2 font-mono text-[15px] font-bold text-slate-300 transition hover:border-blue-400/70 hover:text-blue-300"
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </Panel>
   );

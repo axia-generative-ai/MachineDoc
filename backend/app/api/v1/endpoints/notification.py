@@ -177,4 +177,3 @@ async def get_notification_detail(
         db, 
         notification_id=notification_id
     )
-

@@ -145,4 +145,3 @@ async def diagnosis(
     - 비즈니스 로직은 search_service.process_ai_query에서 처리됩니다.
     """
     return await search_service.process_ai_query(db, request_data, current_user.user_id)
-

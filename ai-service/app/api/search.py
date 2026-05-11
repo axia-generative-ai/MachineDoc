@@ -32,7 +32,7 @@ from app.pipelines.rag_v2 import RagPipelineV2
 from app.schemas.backend import BackendSearchRequest, BackendSearchResponse
 from app.schemas.search import SearchRequest, SearchResponse
 
-router = APIRouter(prefix="/api/v1", tags=["search"])
+router = APIRouter(prefix="/api/v1", tags=["오류코드 검색"])
 log = logging.getLogger(__name__)
 
 
@@ -96,9 +96,22 @@ def _to_backend_response(internal: SearchResponse) -> BackendSearchResponse:
     )
 
 
-@router.post("/search", response_model=BackendSearchResponse)
+@router.post(
+    "/search",
+    response_model=BackendSearchResponse,
+    summary="오류코드 검색 (백엔드용)",
+    description=(
+        "오류코드를 받아 관련 매뉴얼을 RAG로 검색하고 한국어 조치 절차를 생성합니다.\n\n"
+        "**요청**: `{error_code, equipment_id?}`\n\n"
+        "**응답**: `{status, analysis, solution}` 세 필드 한국어 문자열. "
+        "백엔드가 추가 변환 없이 프런트엔드에 그대로 전달 가능.\n\n"
+        "- `status`: `success` | `no_match` | `error`\n"
+        "- `analysis`: LLM이 정리한 원인 분석 (한국어, 출처 페이지 인용 포함)\n"
+        "- `solution`: 단계별 조치 절차 (한 줄당 1단계, 출처 명시)"
+    ),
+)
 def search(req: BackendSearchRequest) -> BackendSearchResponse:
-    """Backend-facing endpoint. See module docstring for shape."""
+    """오류코드 → 매뉴얼 조치 절차. 백엔드 contract 고정."""
     internal = _run_search(
         query=req.error_code,
         equipment_id=req.equipment_id,
@@ -107,9 +120,18 @@ def search(req: BackendSearchRequest) -> BackendSearchResponse:
     return _to_backend_response(internal)
 
 
-@router.post("/search/full", response_model=SearchResponse)
+@router.post(
+    "/search/full",
+    response_model=SearchResponse,
+    summary="자유 query 검색 (내부 디버깅용)",
+    description=(
+        "자유 텍스트 query로 매뉴얼을 검색하고 raw chunks + LLM 답변을 모두 반환합니다.\n\n"
+        "내부 디버깅 / KPI eval 러너 전용. 백엔드는 호출하지 않습니다.\n\n"
+        "**응답**: `steps[]`, `raw_chunks[]`, `answer_text`, `fallback`, `latency_ms`."
+    ),
+)
 def search_full(req: SearchRequest) -> SearchResponse:
-    """Internal endpoint exposing the full SearchResponse for debugging."""
+    """디버깅용 — full SearchResponse 노출."""
     return _run_search(
         query=req.query,
         equipment_id=req.equipment_id,

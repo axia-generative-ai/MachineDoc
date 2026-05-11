@@ -16,7 +16,7 @@ export const virtualLogLines = [
     content: [
       { text: '"line"', color: 'text-sky-400' },
       { text: ': ', color: 'text-slate-300' },
-      { text: '"라인A"', color: 'text-orange-400' },
+      { text: '"LINE_A"', color: 'text-orange-400' },
       { text: ',', color: 'text-slate-300' },
     ],
   },
@@ -25,7 +25,7 @@ export const virtualLogLines = [
     content: [
       { text: '"equipment"', color: 'text-sky-400' },
       { text: ': ', color: 'text-slate-300' },
-      { text: '"M-102"', color: 'text-orange-400' },
+      { text: '"EQ-MOTOR-001"', color: 'text-orange-400' },
       { text: ',', color: 'text-slate-300' },
     ],
   },

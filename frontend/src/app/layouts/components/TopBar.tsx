@@ -88,7 +88,7 @@ export function TopBar({ isSidebarOpen, onMenuClick }: TopBarProps) {
           <span className="h-3 w-3 rounded-full bg-emerald-400 shadow-[0_0_14px_rgba(52,211,153,0.7)]" />
           온라인
         </span>
-        <span className="h-8 w-px bg-slate-700" />
+        <span className="h-8 w-px bg-slate-700 dark:block" />
 
         <div ref={userMenuRef} className="relative">
           <button
@@ -125,7 +125,7 @@ export function TopBar({ isSidebarOpen, onMenuClick }: TopBarProps) {
           )}
         </div>
 
-        <span className="h-8 w-px bg-slate-700" />
+        <span className="h-8 w-px bg-slate-700 dark:block" />
         <NotificationBellButton />
       </div>
     </header>

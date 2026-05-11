@@ -5,7 +5,6 @@ import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
 
 export function MainLayout() {
-  // 사이드바 열림 상태는 TopBar와 본문 여백이 함께 사용하므로 레이아웃에서 관리합니다.
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     if (typeof window === 'undefined') {
       return true;
@@ -37,8 +36,14 @@ export function MainLayout() {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-factory-radial text-slate-100">
-      {/* 모바일에서는 사이드바가 본문 위를 덮기 때문에 배경 딤을 눌러 닫을 수 있게 합니다. */}
-      {isSidebarOpen && <button type="button" aria-label="사이드바 닫기" onClick={handleSidebarClose} className="fixed inset-0 z-10 bg-black/55 backdrop-blur-[2px] lg:hidden" />}
+      {isSidebarOpen && (
+        <button
+          type="button"
+          aria-label="사이드바 닫기"
+          onClick={handleSidebarClose}
+          className="fixed inset-0 z-10 bg-black/55 backdrop-blur-[2px] lg:hidden"
+        />
+      )}
 
       <Sidebar isOpen={isSidebarOpen} />
       <div className={`transition-[padding] duration-300 ease-out ${isSidebarOpen ? 'lg:pl-[252px]' : 'lg:pl-0'}`}>

@@ -24,7 +24,7 @@ from app.pipelines.anomaly import AnomalyPipeline
 from app.schemas.backend import BackendAnomalyRequest, BackendAnomalyResponse
 from app.schemas.sensor_log import AnomalyResponse, SensorLog
 
-router = APIRouter(prefix="/api/v1", tags=["anomaly"])
+router = APIRouter(prefix="/api/v1", tags=["이상감지"])
 log = logging.getLogger(__name__)
 
 
@@ -69,9 +69,25 @@ def _to_backend_response(internal: AnomalyResponse) -> BackendAnomalyResponse:
     )
 
 
-@router.post("/anomaly", response_model=BackendAnomalyResponse)
+@router.post(
+    "/anomaly",
+    response_model=BackendAnomalyResponse,
+    summary="이상감지 분석 (백엔드용)",
+    description=(
+        "센서 측정값을 받아 룰엔진(1차) + LLM(2차) 분석으로 이상 여부와 조치 절차를 생성합니다.\n\n"
+        "**요청**: `{equipment_id, timestamp, readings}`\n"
+        "- `equipment_id`: 백엔드 `equipment_code` 그대로 (예: `EQ-MOTOR-001`)\n"
+        "- `timestamp`: ISO 8601 문자열\n"
+        "- `readings`: `{TEMPERATURE: float, VIBRATION: float, ...}` (백엔드 `DataType` enum 키)\n\n"
+        "**응답**: `{status, analysis, solution}` 한국어 문자열.\n"
+        "- `status`: `정상` | `주의` | `이상` | `error`\n"
+        "- `analysis`: 추정 원인 (룰 기반 + 매뉴얼 인용)\n"
+        "- `solution`: 권장 조치 + 관련 오류코드 + 참고 매뉴얼\n\n"
+        "정상 케이스는 LLM 호출을 건너뛰어 즉시 응답합니다."
+    ),
+)
 def analyze(req: BackendAnomalyRequest) -> BackendAnomalyResponse:
-    """Backend-facing endpoint."""
+    """센서 측정값 → 이상 여부/원인/조치. 백엔드 contract 고정."""
     try:
         ts = datetime.fromisoformat(req.timestamp)
     except ValueError as exc:
@@ -85,7 +101,15 @@ def analyze(req: BackendAnomalyRequest) -> BackendAnomalyResponse:
     return _to_backend_response(_run_analyze(sensor_log))
 
 
-@router.post("/anomaly/full", response_model=AnomalyResponse)
+@router.post(
+    "/anomaly/full",
+    response_model=AnomalyResponse,
+    summary="이상감지 상세 응답 (내부 디버깅용)",
+    description=(
+        "발동된 룰 목록, manual_refs, related_error_codes, raw_answer, latency_ms 등 "
+        "내부 상태를 모두 노출합니다. 디버깅 / 평가 전용. 백엔드는 호출하지 않습니다."
+    ),
+)
 def analyze_full(payload: SensorLog) -> AnomalyResponse:
-    """Internal endpoint exposing the full AnomalyResponse."""
+    """디버깅용 — full AnomalyResponse 노출."""
     return _run_analyze(payload)

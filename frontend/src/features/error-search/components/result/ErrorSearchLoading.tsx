@@ -1,4 +1,5 @@
-﻿import { Loader2, Search, ShieldCheck, X } from 'lucide-react';
+﻿import { useEffect, useState } from 'react';
+import { Loader2, Search, ShieldCheck, X } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { Panel } from '../../../../shared/ui/Panel';
@@ -18,16 +19,30 @@ const text = {
   cancel: '\uAC80\uC0C9 \uC911\uB2E8',
 } as const;
 
-const loadingSteps: SearchLoadingStep[] = [
-  { label: text.verifyingCode, state: 'done' },
-  { label: text.searchingManual, state: 'active' },
-  { label: text.creatingProcedure, state: 'pending' },
-];
+const STEP_LABELS = [text.verifyingCode, text.searchingManual, text.creatingProcedure] as const;
+const STEP_INTERVAL_MS = 1500;
+
+function buildSteps(activeIndex: number): SearchLoadingStep[] {
+  return STEP_LABELS.map((label, index) => ({
+    label,
+    state: index < activeIndex ? 'done' : index === activeIndex ? 'active' : 'pending',
+  }));
+}
 
 export function ErrorSearchLoading() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const keyword = searchParams.get('q') || 'E-204';
+  const keyword = searchParams.get('q') || 'OPE03';
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActiveIndex((prev) => (prev < STEP_LABELS.length - 1 ? prev + 1 : prev));
+    }, STEP_INTERVAL_MS);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const loadingSteps = buildSteps(activeIndex);
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-210px)] max-w-[960px] items-center justify-center px-2 py-10">

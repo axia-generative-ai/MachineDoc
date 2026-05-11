@@ -18,5 +18,4 @@ class ActionLogService:
     def list_for_user(self, db: Session, *, user_id: int, limit: int = 50):
         return action_log_repository.list_by_user(db, user_id=user_id, limit=limit)
 
-
 action_log_service = ActionLogService()

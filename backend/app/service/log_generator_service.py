@@ -22,26 +22,21 @@ log = logging.getLogger(__name__)
 # LLM 분석은 오류코드 검색(/search/code → ai-service /api/v1/search) 흐름에서만 일어난다.
 class LogGeneratorService:
     async def create_virtual_log_by_name(self, db: Session, equipment_name: str):
-        # 1. 설비 정보 조회
         equipment = equipment_repository.get_by_name(db, name=equipment_name)
         if not equipment:
             raise HTTPException(status_code=404, detail=f"설비 '{equipment_name}'을 찾을 수 없습니다.")
 
-        # 2. 가상 데이터 생성 (타입 결정 및 무작위 값)
         data_type = random.choice(list(DataType))
         value = self._generate_random_value(data_type)
 
-        # 3. 임계값 조회 CRUD 사용 (분리 완료)
         threshold = threshold_repository.get_by_equipment_and_type(
             db,
             equipment_id=equipment.equipment_id,
             data_type=data_type
         )
 
-        # 4. 상태 분석 (DB 임계값 기반)
         status = self._analyze_log_status(value, threshold)
 
-        # 5. 로그 생성 및 DB 저장
         log_in = EquipmentLogCreate(
             equipment_id=equipment.equipment_id,
             data_type=data_type,

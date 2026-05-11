@@ -2,8 +2,9 @@
 --
 -- Schema for the manual chunk vector store.
 -- The embedding column dimension is provider-dependent:
---   bge-m3                   -> 1024
---   text-embedding-3-small   -> 1536
+--   nomic-embed-text         -> 768   (current production default)
+--   text-embedding-3-small   -> 1536  (OpenAI swap)
+--   bge-m3                   -> 1024  (deprecated; NaN failures on Ollama)
 -- This file uses a placeholder `__EMBEDDING_DIM__` that
 -- `scripts/init_db.py` substitutes at runtime based on the configured
 -- embedding model. **Switching providers requires recreating this table**

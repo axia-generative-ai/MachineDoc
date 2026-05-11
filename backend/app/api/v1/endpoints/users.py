@@ -102,4 +102,3 @@ def delete_user(
         target_user_id=user_id, 
         admin_user_id=admin_user.user_id
     )
-

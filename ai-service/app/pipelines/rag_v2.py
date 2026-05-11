@@ -12,18 +12,21 @@ Differs from `rag.py` (v1) in three ways:
    guaranteed regardless of LLM whim — fixed sections, numbered steps,
    manual citations.
 
-Status: skeleton. `parent_loader` and the rule-based post-processor are
-stubbed; LLM call mirrors v1's `/no_think` quirk for qwen3.5:9b. Wired
-under a feature flag in the API layer (default off) until v2 retrieval
-hits parity with v1 on the synthetic eval set.
+Production pipeline since 2026-05. LLM call mirrors v1's `/no_think`
+quirk for the qwen3 family (currently qwen2.5:3b in dev, but the
+prefix is required whenever the model is qwen3.x — see
+project_qwen3_no_think memory).
 """
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 import time
 from dataclasses import dataclass
+from functools import lru_cache
+from pathlib import Path
 from typing import Protocol
 
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -45,6 +48,34 @@ from app.schemas.search import GuideStep, RawChunk, SearchResponse, SourceRef
 
 logger = logging.getLogger(__name__)
 
+
+@lru_cache(maxsize=1)
+def _manual_filename_map() -> dict[str, str]:
+    """manual_id (slug) → 실 PDF 파일명 매핑.
+
+    Why: V2Hit.manual_id는 ai-service 내부 슬러그(yaskawa_ga700_technical 등)지만
+    백엔드 saved_manual.file_url은 실 파일명(ga700.pdf)이라 출처 인용을 그대로 두면
+    프론트가 PDF를 열지 못한다. manuals/manual_index.json을 source-of-truth로 두고
+    매핑한다. 인덱스가 없거나 키가 비면 슬러그+`.pdf`로 폴백.
+    """
+    candidates = [
+        Path(__file__).resolve().parents[2] / "manuals" / "manual_index.json",
+        Path(__file__).resolve().parents[2] / "data" / "manuals" / "manual_index.json",
+    ]
+    for path in candidates:
+        if path.exists():
+            try:
+                rows = json.loads(path.read_text(encoding="utf-8"))
+                return {r["manual_id"]: r["manual_filename"] for r in rows if r.get("manual_id") and r.get("manual_filename")}
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("manual_index load failed (%s): %s", path, exc)
+    return {}
+
+
+def _filename_for(manual_id: str) -> str:
+    return _manual_filename_map().get(manual_id, f"{manual_id}.pdf")
+
+
 # Same Qwen3 quirk as v1 — `/no_think` in BOTH system and user content
 # or the model returns empty for long prompts. See
 # `project_qwen3_no_think.md` memory.
@@ -54,7 +85,7 @@ _NO_THINK = SystemMessage(content="/no_think")
 # parse time. Reviewer feedback: real industrial responses must be in
 # Korean regardless of source manual language.
 #
-# Style decisions to keep qwen3.5:9b honest:
+# Style decisions to keep small Ollama models (qwen2.5:3b / qwen3.5:9b) honest:
 #   - No `<placeholder>` tokens in the skeleton — the model copies them
 #     verbatim into output. Use plain instructions instead.
 #   - Per-step source format is shown as a literal example so the model
@@ -67,14 +98,18 @@ _KOREAN_SKELETON = """다음 매뉴얼 컨텍스트를 바탕으로 사용자의
 출력은 반드시 아래 두 섹션을 포함해야 한다.
 
 [원인]
-한 문단으로 원인을 설명하라.
+한 문단으로 원인을 설명하라. 매뉴얼 본문에서 언급된 구체적 원인(예: 케이블 단선, 센서 오작동, 임계값 초과, 펌웨어 버전 불일치 등)을 그대로 인용하라.
 
 [조치 절차]
-1. 첫 번째 조치 (출처: abb_irb_troubleshooting.pdf, p.234)
-2. 두 번째 조치 (출처: abb_irb_troubleshooting.pdf, p.235)
+1. (실제 조치 동사로 시작) 예: "메인 전원 차단 후 컨트롤러 카드의 LED 상태를 확인한다." (출처: abb_irb_troubleshooting.pdf, p.234)
+2. (실제 조치 동사로 시작) 예: "케이블 커넥터를 분리하고 핀의 부식·산화 여부를 점검한다." (출처: abb_irb_troubleshooting.pdf, p.235)
+
+절대 금지:
+- "첫 번째 조치", "두 번째 조치", "조치 1", "조치 2" 같은 의미 없는 자리표시자 문구를 그대로 출력하지 마라.
+- 각 단계는 반드시 매뉴얼에 적힌 실제 동작(점검·교체·재시작·청소 등)을 동사로 끝내야 한다.
 
 규칙:
-- 출처 표기는 위 예시와 동일하게 매 줄 끝에 `(출처: 파일명.pdf, p.페이지)` 형식으로 쓰라.
+- 출처 표기는 매 줄 끝에 `(출처: 파일명.pdf, p.페이지)` 형식으로 쓰라.
   파일명과 페이지는 컨텍스트 블록 머리의 `[매뉴얼: ..., 페이지: ...]`에서 그대로 가져와라.
 - 모든 답변은 한국어로 작성하라 (영어 그대로 옮기지 말 것).
 - 컨텍스트의 변수 자리표시자(`arg`, `<...>` 등)는 그대로 옮기지 말고 자연스럽게 풀어 쓰라.
@@ -136,8 +171,8 @@ class KoreanResponseRules:
     """Post-process the LLM raw output into a guaranteed structure.
 
     Runs purely on regex/string ops (no LLM calls) so it does not
-    affect P95 latency. Cleans the typical qwen3.5:9b failure modes
-    observed during AI-24:
+    affect P95 latency. Cleans the typical failure modes observed
+    on small Ollama models (qwen2.5:3b / qwen3.5:9b) during AI-24:
 
     1. Placeholder leak — `<한 문단>`, `<조치>`, `<매뉴얼>`, `<페이지>`,
        trailing `...` from the prompt skeleton get copied verbatim.
@@ -321,7 +356,7 @@ class RagPipelineV2:
         # Harvest deterministic hints from retrieval for post-processing —
         # don't trust the model for codes/filenames when we already know them.
         code_hint = self._collect_codes(hits)
-        manual_filename_hint = f"{hits[0].manual_id}.pdf" if hits else None
+        manual_filename_hint = _filename_for(hits[0].manual_id) if hits else None
         normalized = self.rules.normalize(
             raw,
             code_hint=code_hint,
@@ -359,7 +394,7 @@ class RagPipelineV2:
                 GuideStep(
                     order=s.order,
                     action=s.action,
-                    source=SourceRef(manual=f"{h.manual_id}.pdf", page=h.page),
+                    source=SourceRef(manual=_filename_for(h.manual_id), page=h.page),
                 )
             )
         return out
@@ -395,13 +430,17 @@ class RagPipelineV2:
             text = parent.text if parent else h.chunk_text
             heading = " > ".join(parent.heading_path) if parent else " > ".join(h.heading_path)
             blocks.append(
-                f"[매뉴얼: {h.manual_id}.pdf, 페이지: {h.page}, 섹션: {heading}]\n{text}"
+                f"[매뉴얼: {_filename_for(h.manual_id)}, 페이지: {h.page}, 섹션: {heading}]\n{text}"
             )
         return "\n\n---\n\n".join(blocks)
 
     def _render_prompt(self, query: str, context: str) -> str:
+        # 프롬프트 스켈레톤은 DB(`prompts.rag_korean_skeleton`)에서 fetch.
+        # 미존재 시 _KOREAN_SKELETON를 default로 자동 시드. 30초 LRU 캐시로 query 지연 없음.
+        from app.services.prompt_service import prompt_service
+        skeleton = prompt_service.get("rag_korean_skeleton", default=_KOREAN_SKELETON)
         return (
-            f"{_KOREAN_SKELETON}\n\n"
+            f"{skeleton}\n\n"
             f"## 컨텍스트\n{context}\n\n"
             f"## 질문\n{query}\n"
         )

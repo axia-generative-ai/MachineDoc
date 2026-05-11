@@ -4,16 +4,18 @@ export const adminTabs = ['매뉴얼 등록', '오류코드 매핑', '프롬프�
 export type AdminTab = (typeof adminTabs)[number];
 
 export const manualSettings = {
-  manualName: 'Valve Manual',
-  category: '밸브',
+  manualName: 'YASKAWA GA700 모터 매뉴얼',
+  category: '점검',
   version: 'v1.0',
-  errorCode: 'E-204',
+  errorCode: 'OPE03',
 };
 
 export const errorCodeMappings = [
-  { code: 'E-204', manual: 'Valve Manual', icon: ChevronRight },
-  { code: 'M-102', manual: 'Motor Manual', icon: ChevronRight },
-  { code: 'S-101', manual: 'Sensor Manual', icon: ChevronRight },
+  { code: 'OPE03', manual: 'YASKAWA GA700 모터 매뉴얼', icon: ChevronRight },
+  { code: 'F081', manual: 'Rockwell PowerFlex 컨베이어 매뉴얼', icon: ChevronRight },
+  { code: 'ALM197', manual: 'FANUC 0M 프레스 매뉴얼', icon: ChevronRight },
+  { code: '10025', manual: 'ABB IRB 로봇 매뉴얼', icon: ChevronRight },
+  { code: 'AL.50', manual: 'Mitsubishi Servo 용접기 매뉴얼', icon: ChevronRight },
 ] as const;
 
 export const adminStats = [

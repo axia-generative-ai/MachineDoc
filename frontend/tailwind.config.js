@@ -15,5 +15,9 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    ({ addVariant }) => {
+      addVariant('light', ":root[data-theme='light'] &");
+    },
+  ],
 };
