@@ -36,21 +36,28 @@ INSERT INTO saved_manual (user_id, title, file_url, category, version, equipment
   (3, 'ABB IRB 로봇 매뉴얼',                'abb_irb_troubleshooting.pdf',          '수리', 'v1.0', 4),
   (3, 'Mitsubishi Servo 용접기 매뉴얼',     'mitsubishi_servo_amp_instruction.pdf', '점검', 'v1.0', 5);
 
--- 4. error_code 20행 (각 매뉴얼당 4개씩)
--- ai-service가 인덱싱한 실제 PDF 본문에서 등장하는 코드만 사용.
--- 가짜 코드(E0001 류)를 쓰면 RAG가 매뉴얼 출처를 인용하지 못해 ManualPreview/AI 조치절차에
--- (출처: ...) 매핑이 비게 됨. 매뉴얼별 대표 알람/Fault 코드를 4개씩 선정.
---   manual 1 (ga700.pdf, YASKAWA GA700)        : oPE03/A001/S020/OPE08 류
---   manual 2 (520-um001, Rockwell PowerFlex)   : F0xx Fault 코드
---   manual 3 (fanuc_series0m_maintenance)      : ALMxxx / NO. xxxx
---   manual 4 (abb_irb_troubleshooting)         : 5자리 Event ID (10025 류)
---   manual 5 (mitsubishi_servo_amp_instruction): AL.xx 알람
+-- 4. error_code 25행 (각 매뉴얼당 5개씩) — 시연용 코드 셋
+-- ai-service가 색인한 manual_sections.error_codes에 실제로 매칭되는 코드만 사용.
+-- 매칭 안 되면 search_service.get_ai_diagnosis가 INVALID_CODE로 거르거나, 통과해도
+-- RAG가 빈 답변을 줘서 ManualPreview에 (출처:...) 인용이 비게 된다. 25/25 sanity 검증 완료.
+-- (검증 쿼리는 ai-service/.claude/integration/test_scenarios_fullstack.md 참고)
+--
+-- 주의: ai-service 색인은 PDF 본문 케이스 그대로 (예: 'oC', 'Uv1', 'oH'). search_service는
+-- 백엔드 검증 시 .upper()로 비교하므로 DB는 대문자/원본 어떤 케이스로 넣어도 통과하지만,
+-- AI 호출 payload는 사용자 입력 케이스 그대로 전달되니 시연 카드/UI는 색인 케이스와 동일하게 표기할 것.
+--
+--   manual 1 (ga700.pdf, YASKAWA GA700)        : E5(189), oC(40), oH(31), oL1(51), Uv1(52)
+--   manual 2 (520-um001, Rockwell PowerFlex)   : F021(2), F081(2), F111(8), F013(7), F012(6)
+--   manual 3 (fanuc_series0m_maintenance)      : SV0417(6), SV0462(5), SV0463(5), SV0401(4), SP9001(4)
+--   manual 4 (abb_irb_troubleshooting)         : 10010, 10025, 10026, 10030, 10034 (각 1)
+--   manual 5 (mitsubishi_servo_amp_instruction): E9(12), E1(8), E6(8), A.50(3), A.51(3)
+-- ※ 괄호 안 숫자는 ai-service의 manual_sections hit count (RAG 답변 풍부도 척도).
 INSERT INTO error_code (manual_id, code_name) VALUES
-  (1,'A001'),  (1,'OPE03'),  (1,'OPE08'),  (1,'S020'),
-  (2,'F081'),  (2,'F014'),   (2,'F021'),   (2,'F111'),
-  (3,'ALM197'),(3,'ALM401'), (3,'ALM403'), (3,'ALM500'),
-  (4,'10025'), (4,'10026'),  (4,'10030'),  (4,'10034'),
-  (5,'AL.50'), (5,'AL.25'),  (5,'AL.51'),  (5,'AL.74');
+  (1,'E5'),     (1,'oC'),     (1,'oH'),     (1,'oL1'),    (1,'Uv1'),
+  (2,'F021'),   (2,'F081'),   (2,'F111'),   (2,'F013'),   (2,'F012'),
+  (3,'SV0417'), (3,'SV0462'), (3,'SV0463'), (3,'SV0401'), (3,'SP9001'),
+  (4,'10010'),  (4,'10025'),  (4,'10026'),  (4,'10030'),  (4,'10034'),
+  (5,'E9'),     (5,'E1'),     (5,'E6'),     (5,'A.50'),   (5,'A.51');
 
 -- 5. 24시간 분산 log + notification — 대시보드 trend/digest 시각화 보강
 -- 시드 직후 데이터가 한 시점에 몰려있으면 trend 차트가 직선이 되고
