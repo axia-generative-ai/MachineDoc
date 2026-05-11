@@ -28,7 +28,6 @@ class ManualResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 class ErrorCodeMapping(BaseModel):
     """오류코드 ↔ 매뉴얼 매핑 한 건."""
     error_code_id: int
@@ -37,5 +36,5 @@ class ErrorCodeMapping(BaseModel):
     manual_title: str
     category: str
     version: str
-
+    
     model_config = ConfigDict(from_attributes=True)

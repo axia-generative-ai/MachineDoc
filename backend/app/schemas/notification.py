@@ -2,6 +2,8 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from app.models.notification import ReadStatus, NotificationLevel
+from app.schemas.log import InfoLogResponse
+from app.schemas.equipment import InfoEquipmentResponse
 
 # 생성용 스키마
 class NotificationCreate(BaseModel):
@@ -24,3 +26,19 @@ class NotificationResponse(BaseModel):
     suggested_error_code: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+class InfoNotificationResponse(BaseModel):
+    notification_id: int
+    message: str
+    is_read: ReadStatus
+    level: NotificationLevel
+
+    model_config = ConfigDict(from_attributes=True)
+
+class NotificationDetailResponse(BaseModel):
+    notification: InfoNotificationResponse
+    log: InfoLogResponse
+    equipment: InfoEquipmentResponse
+
+class ReadStatusUpdate(BaseModel):
+    is_read: ReadStatus

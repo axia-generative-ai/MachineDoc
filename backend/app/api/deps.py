@@ -30,7 +30,7 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
     user = user_repository.get_user_by_email(db, email=email)
     if user is None:
         raise credentials_exception
-
+        
     # 4. 상태 확인: 토큰이 살아있어도 PENDING/LOGOUT 사용자는 차단.
     # 관리자가 강등하거나 로그아웃 처리한 사용자가 만료 전 토큰으로 호출 못하도록 한다.
     if user.state != UserState.LOGIN:

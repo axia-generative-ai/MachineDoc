@@ -3,9 +3,10 @@ import httpx
 from fastapi import HTTPException
 from typing import Any, Dict
 
+# AI 서버 주소 (나중에 config에서 관리하세요!)
 AI_SERVER_URL = os.getenv("AI_SERVICE_URL", "http://localhost:8001")
 
-async def call_ai_server(payload: Dict[str, Any]) -> Dict[str, Any]:
+async def call_ai_server(payload: Dict[str, Any]) -> Dict[str, Any]:    
     """
     AI 서버(ai-service)의 /api/v1/search 로 위임.
     payload: {"error_code": "...", "equipment_id"?: "..."}

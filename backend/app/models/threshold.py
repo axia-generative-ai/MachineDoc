@@ -12,7 +12,7 @@ class EquipmentThreshold(Base):
     threshold_id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
     
     # 어느 설비의 임계값인지 참조
-    equipment_id = Column(BigInteger, ForeignKey("equipment.equipment_id"), nullable=False)
+    equipment_id = Column(BigInteger, ForeignKey("equipment.equipment_id", ondelete="CASCADE"), nullable=False)
     
     # 어떤 데이터 타입(온도/진동)에 대한 설정인지
     data_type = Column(Enum(DataType), nullable=False)

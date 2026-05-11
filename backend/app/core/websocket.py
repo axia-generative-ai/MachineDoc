@@ -7,9 +7,9 @@ class ConnectionManager:
         self.active_connections: List[WebSocket] = []
 
     async def connect(self, websocket: WebSocket):
-        """이미 accept 된 WebSocket을 풀에 등록"""
+        """새로운 클라이언트 연결 수락"""
         self.active_connections.append(websocket)
-        print(f"[WS] New connection. Total: {len(self.active_connections)}")
+        print(f"📡 New WebSocket connection. Total: {len(self.active_connections)}")
 
     async def disconnect(self, websocket: WebSocket):
         """클라이언트 연결 해제"""
@@ -28,7 +28,9 @@ class ConnectionManager:
             try:
                 await connection.send_json(message)
             except Exception as e:
-                print(f"[WS] Broadcast failed: {e}")
+                # 연결이 끊긴 세션이 남아있을 경우 예외 처리
+                print(f"❌ Broadcast failed for a connection: {e}")
+                # 필요 시 여기서 리스트에서 제거하는 로직 추가
                 dead.append(connection)
         for connection in dead:
             if connection in self.active_connections:

@@ -9,7 +9,6 @@ from fastapi.responses import FileResponse
 
 router = APIRouter()
 
-
 @router.get(
     "/mine",
     summary="내가 업로드한 매뉴얼 (저장 문서)",
@@ -25,7 +24,6 @@ def list_my_manuals(
     """
     return manual_service.list_my_manuals(db, user_id=current_user.user_id)
 
-
 @router.get(
     "/error-codes",
     summary="오류코드 ↔ 매뉴얼 매핑 전체 조회",
@@ -36,8 +34,8 @@ def list_error_code_mappings(
     current_user: User = Depends(deps.get_current_user),
 ):
     """
-    `error_code` 테이블 전체를 매뉴얼 정보와 join하여 반환합니다.
-    - 관리자가 매뉴얼 업로드 시 등록한 `(매뉴얼, 오류코드)` 쌍 N건이 그대로 노출됩니다.
+    **error_code** 테이블 전체를 매뉴얼 정보와 join하여 반환합니다.
+    - 관리자가 매뉴얼 업로드 시 등록한 **(매뉴얼, 오류코드)** 쌍 N건이 그대로 노출됩니다.
     - 인증된 사용자라면 누구나 조회 가능 (관리자 패널에서 매핑 검토용).
     """
     return manual_service.list_error_code_mappings(db)
@@ -110,7 +108,7 @@ async def upload_manual(
     category: str = Form(..., description="설비 분류 또는 카테고리", examples=["점검"]),
     version: str = Form(..., description="매뉴얼 버전", examples=["v1.0.2"]),
     equipment_id: Optional[int] = Form(None, description="대상 설비 ID(선택). 알림 → 매뉴얼 매칭에 사용"),
-    error_codes: List[str] = Form(default_factory=list, description="이 매뉴얼이 다루는 오류코드 리스트(선택)", examples=[["E0001", "E0023"]]),
+    error_codes: List[str] = Form(..., description="매뉴역과 연결될 에러 코드 리스트", examples=[["E0001", "E0023"]]),
     file: UploadFile = File(..., description="업로드할 PDF 파일"),
     db: Session = Depends(deps.get_db),
     current_user: User = Depends(deps.get_current_admin_user)

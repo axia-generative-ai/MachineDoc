@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 def _resolve_manual_dir() -> Path:
     """매뉴얼 PDF 디렉토리 자동 탐지.
 
@@ -35,9 +34,7 @@ def _resolve_manual_dir() -> Path:
     fallback.mkdir(parents=True, exist_ok=True)
     return fallback
 
-
 _MANUAL_DIR = _resolve_manual_dir()
-
 
 class Settings:
     PROJECT_NAME: str = "Smart Factory RAG Project"
@@ -48,7 +45,9 @@ class Settings:
     ALGORITHM: str = os.getenv("ALGORITHM")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
     REFRESH_TOKEN_EXPIRE_DAYS: int = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS"))
+    @property
+    def REFRESH_TOKEN_EXPIRE_SECONDS(self) -> int:
+        return self.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
     MANUAL_URL: str = str(_MANUAL_DIR) + os.sep
-
 
 config = Settings()

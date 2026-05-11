@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from app.models.saved_manual import SavedManual
 from app.schemas.manual import ManualCreateInternal
 
-class ManualRepository:
+class CRUDManual:
     def get_manuals_by_category(self, db: Session, category: str):
         return db.query(SavedManual).filter(SavedManual.category == category).all()
 
@@ -26,4 +26,4 @@ class ManualRepository:
         db.flush()
         return db_manual
 
-manual_repository = ManualRepository()
+manual_repository = CRUDManual()

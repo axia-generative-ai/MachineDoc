@@ -51,5 +51,5 @@ class User(Base):
     # server_default=func.now()는 DB가 직접 시간을 생성하게 합니다.
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
-    manuals = relationship("SavedManual", back_populates="creator")
-    search_histories = relationship("SearchHistory", back_populates="user")
+    manuals = relationship("SavedManual", back_populates="creator", cascade="all, delete-orphan")
+    search_histories = relationship("SearchHistory", back_populates="user", cascade="all, delete-orphan")

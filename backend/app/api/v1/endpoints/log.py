@@ -7,8 +7,8 @@ from app.models.user import User
 from app.schemas.log import EquipmentLogResponse
 from app.service.log_generator_service import log_generator_service
 
-router = APIRouter()
 
+router = APIRouter()
 
 @router.post(
     "/virtual/{equipment_name}",
@@ -44,7 +44,7 @@ async def create_virtual_log(
     3. **이상 감지 알림 (WebSocket)**:
         - 상태가 **'경고'** 또는 **'위험'**일 경우, Notification을 생성하여 DB에 저장합니다.
         - 연결된 모든 클라이언트에게 웹소켓(ANOMALY_DETECTED 이벤트)으로 실시간 알림을 전송합니다.
-
+    
     ### 🔒 보안:
     - 이 API는 **로그인한 사용자**만 호출할 수 있습니다.
 

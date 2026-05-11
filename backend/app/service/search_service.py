@@ -1,9 +1,11 @@
 import re
 from typing import Optional
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 import json
+import httpx
 from app.core.ai_client import call_ai_server
+from app.schemas.search import AIQueryRequest
 from app.crud.crud_error_code import error_code_repository
 from app.crud.crud_search_history import search_history_repository
 from app.models.saved_manual import SavedManual
@@ -55,7 +57,6 @@ def _extract_citations(db: Session, *texts: str) -> list[dict]:
         }
         for fn, page in pairs
     ]
-
 
 class SearchService:
     def list_user_history(self, db: Session, *, user_id: int, limit: int = 50, status: Optional[str] = None):
@@ -114,5 +115,53 @@ class SearchService:
             return {**ai_result, "history_id": history_id, "citations": citations}
         return {"result": ai_result, "history_id": history_id, "citations": []}
 
-# 싱글톤으로 사용하기 위해 인스턴스 생성
+    async def process_ai_query(self, db: Session, data: AIQueryRequest, user_id: int):
+        query_text = f"설비 {data.equipment_code} / {data.data_type} / 수치: {data.value}"
+        ai_result = {}
+        search_status = "PENDING"
+        
+        try:
+            async with httpx.AsyncClient() as client:
+                # 실제 호출 시 주석 해제
+                # response = await client.post(settings.AI_SERVER_URL, json=data.model_dump())
+                # response.raise_for_status()
+                # ai_result = response.json()
+                
+                # 테스트용 가상 응답
+                ai_result = {"answer": f"{data.equipment_code}의 분석 결과입니다."}
+                search_status = "COMPLETED"
+                
+                # 결과가 나왔으므로 여기서 리턴하지 않고 아래로 내려가서 DB 저장 후 리턴
+                
+        except Exception as e:
+            search_status = "AI_ERROR"
+            ai_result = {"error": str(e)}
+            # 로깅 추가 (디버깅용)
+            print(f"AI Service Error: {e}")
+            # 여기서 바로 raise 하지 않고, DB 기록 후에 처리합니다.
+
+        finally:
+            # 이력 저장 (try/except 어느 쪽에서 내려와도 실행됨)
+            try:
+                search_history_repository.create_history(
+                    db, 
+                    user_id=user_id, 
+                    log_id=data.log_id,
+                    query=query_text,
+                    result=json.dumps(ai_result, ensure_ascii=False),
+                    status=search_status
+                )
+            except Exception as db_e:
+                print(f"Database Error (History logging failed): {db_e}")
+                # 이력 저장 실패가 AI 결과 반환을 막지 않도록 예외 처리
+
+        # 에러 상태였다면 여기서 예외 발생
+        if search_status == "AI_ERROR":
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE, 
+                detail="AI 분석 처리 중 오류가 발생했습니다."
+            )
+
+        return ai_result # 성공 시 최종 결과 반환
+            
 search_service = SearchService()

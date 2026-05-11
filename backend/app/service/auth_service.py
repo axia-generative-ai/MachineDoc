@@ -1,4 +1,4 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, status, Response
 from sqlalchemy.orm import Session
 from app.models.user import User, UserState
 from app.crud.crud_user import user_repository
@@ -7,6 +7,8 @@ from app.schemas.token import RefreshTokenCreate
 from app.core.security import verify_password, create_access_token, create_refresh_token
 from app.core.config import config
 from datetime import datetime, timedelta
+from jose import jwt, JWTError
+from app.core.config import config
 
 class AuthService:
     # def authenticate_user(db: Session, login_data: UserLoginSchema):
@@ -35,8 +37,6 @@ class AuthService:
         refresh_token = create_refresh_token(data=token_data)
         
         # 5. 기존 리프레시 토큰이 있다면 업데이트, 없다면 새로 생성
-        # JWT 의 exp 클레임과 동일하게 REFRESH_TOKEN_EXPIRE_DAYS 사용 (기본 7일).
-        # 이전엔 14d 하드코딩 → JWT 만료보다 DB 만료가 길어 검증 기준 불일치.
         expires_at = datetime.utcnow() + timedelta(days=config.REFRESH_TOKEN_EXPIRE_DAYS)
         
         # 스키마 객체 생성
@@ -75,5 +75,60 @@ class AuthService:
         
         db.commit()
         return "로그아웃이 완료됐습니다."
+    
+    def refresh_access_token(self, db: Session, refresh_token: str):
+        # 1. JWT 토큰 디코딩 및 검증 (서명, 만료시간 등)
+        try:
+            payload = jwt.decode(refresh_token, config.SECRET_KEY, algorithms=[config.ALGORITHM])
+            email: str = payload.get("sub")
+            if email is None:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED, 
+                    detail="유효하지 않은 토큰입니다."
+                )
+        except JWTError:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, 
+                detail="리프레시 토큰이 만료되었거나 변조되었습니다."
+            )
+
+        # 2. DB에서 해당 리프레시 토큰 존재 여부 및 만료 확인
+        db_token = token_repository.get_refresh_token_by_token(db, token=refresh_token)
+        
+        if not db_token:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, 
+                detail="존재하지 않는 리프레시 토큰입니다."
+            )
+        
+        if db_token.expires_at < datetime.utcnow():
+            # 만료된 토큰은 DB에서 삭제 후 에러 반환
+            token_repository.delete_refresh_token(db, user_id=db_token.user_id)
+            db.commit()
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, 
+                detail="리프레시 토큰이 만료되었습니다. 다시 로그인해주세요."
+            )
+
+        # 3. 새로운 액세스 토큰 생성
+        new_access_token = create_access_token(data={"sub": email})
+
+        # (선택 사항) 리프레시 토큰 회전(Rotation): 보안을 위해 리프레시 토큰도 새로 발급 가능
+        
+        return {
+            "access_token": new_access_token,
+            "token_type": "bearer"
+        }
+    
+    def set_refresh_cookie(self, response: Response, refresh_token: str):
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,     # JS 접근 불가 (XSS 방어)
+            secure=True,       # HTTPS 연결에서만 전송 (운영 환경 필수)
+            samesite="lax",    # CSRF 방어 정책
+            max_age=config.REFRESH_TOKEN_EXPIRE_SECONDS,
+            path="/",          # 모든 경로에서 쿠키 전송
+        )
 
 auth_service = AuthService()

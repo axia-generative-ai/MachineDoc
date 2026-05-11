@@ -14,7 +14,6 @@ from app.schemas.manual import ManualCreate, ManualCreateInternal
 from app.crud.crud_error_code import error_code_repository
 from typing import List
 
-
 def _slugify(text: str) -> str:
     """ai-service manual_id/equipment_id 슬러그 생성: 영숫자+_- 만 허용, 소문자."""
     s = re.sub(r"[^A-Za-z0-9가-힣]+", "_", text or "").strip("_").lower()
@@ -49,7 +48,7 @@ class ManualService:
             }
             for row in rows
         ]
-
+    
     async def get_equipment_manual(self, db, equipment_code, category):
         # 1. DB 우선 조회
         if category:
@@ -115,7 +114,7 @@ class ManualService:
                 })
 
         return {"source": "ai_recommendation", "data": synthesized}
-
+    
     def list_my_manuals(self, db, user_id: int):
         return manual_repository.get_manuals_by_user(db, user_id=user_id)
     
@@ -152,7 +151,7 @@ class ManualService:
         # file_url 컬럼에는 파일명만 저장 (get_manual_file_response가 MANUAL_URL + file_url로 조합)
         upload_dir = config.MANUAL_URL
         os.makedirs(upload_dir, exist_ok=True)
-
+        
         original_filename = file.filename or "manual.pdf"
         file_extension = os.path.splitext(original_filename)[1] or ".pdf"
         safe_filename = f"{uuid4()}{file_extension}"
@@ -177,17 +176,18 @@ class ManualService:
                 error_code_repository.create_multiple(
                     db,
                     manual_id=new_manual.manual_id,
-                    codes=error_codes,
+                    codes=error_codes
                 )
 
             db.commit()
             db.refresh(new_manual)
         except Exception as e:
             db.rollback()
+            
             if os.path.exists(file_path):
                 os.remove(file_path)
             raise HTTPException(status_code=500, detail=f"데이터베이스 기록 중 오류가 발생했습니다: {str(e)}")
-
+        
         # 3. ai-service로 PDF forward → 청킹/임베딩/색인 (동기, 600초 timeout)
         # ai-service 응답의 error_codes[]를 backend `error_code` 테이블에 추가 sync
         # (사용자 입력 코드와 중복 시 skip)
@@ -248,5 +248,5 @@ class ManualService:
             "title": new_manual.title,
             "message": message,
         }
-
+    
 manual_service = ManualService()

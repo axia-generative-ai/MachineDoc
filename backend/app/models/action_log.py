@@ -2,7 +2,7 @@ import enum
 from sqlalchemy import Column, BigInteger, Text, Integer, Enum, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from app.db.session import Base
+from app.db.base import Base
 
 # 조치 상태 정의
 class ActionStatus(str, enum.Enum):
@@ -17,7 +17,7 @@ class ActionLog(Base):
     action_log_id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
     
     # 1:1 관계 - 어떤 검색 기록을 바탕으로 조치했는가
-    history_id = Column(BigInteger, ForeignKey("search_history.history_id"), nullable=False, unique=True)
+    history_id = Column(BigInteger, ForeignKey("search_history.history_id", ondelete="CASCADE"), nullable=False, unique=True)
     
     action_sta = Column(Enum(ActionStatus), nullable=False) # 조치 상태
     comment = Column(Text, nullable=True) # 조치 코멘트
