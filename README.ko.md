@@ -2,7 +2,7 @@
 
 > **스마트팩토리 설비 이상감지·매뉴얼 RAG AI 프로토타입**
 
-[English Version](./README.en.md)
+[English Version](./README.md)
 
 ---
 
@@ -32,15 +32,17 @@
 
 ## 📂 레포지토리 구조
 
-| 폴더 | 담당 | 설명 |
-|---|---|---|
-| `frontend/` | 팀원 A | React 기반 사용자 인터페이스 및 클라이언트 앱 |
-| `backend/` | 팀원 B | REST API 서버, 비즈니스 로직, DB 연동 |
-| `ai-service/` | 팀원 C | RAG 파이프라인, LLM 연동, 임베딩 및 검색 |
-| `docs/` | 공통 | 기획·설계·아키텍처·발표 문서 |
-| `shared/` | 공통 | 환경 변수 템플릿 등 |
+```
+.
+├── frontend/        # React 18 + Vite + TypeScript (포트 5173)
+├── backend/         # FastAPI + SQLAlchemy + JWT (포트 8000)
+├── ai-service/      # FastAPI + LangChain + 커스텀 hybrid RAG (포트 8001)
+├── docker-compose.yml
+├── shared/          # 환경 변수 템플릿 등
+└── docs/            # 기획·설계·아키텍처·발표 문서
+```
 
-각 폴더의 상세 실행법·구조는 해당 폴더 내부 README를 참고하세요. (각 팀원이 작성)
+각 폴더의 상세 구조·내부 모듈 설계는 `ai-service/README.md` 참고 (백엔드/프론트는 각각 본 README의 실행 섹션 참조).
 
 ---
 
@@ -69,11 +71,167 @@
 
 | 영역 | 스택 |
 |---|---|
-| Frontend | React 18, TypeScript, Tailwind CSS |
-| Backend | FastAPI, Python 3.13 |
-| AI/ML | LangChain, OpenAI API (운영), 로컬 개발은 Ollama, pgvector |
-| Database | PostgreSQL (Relational) + PGVector (Vector) |
-| DevOps | GitHub Actions, Docker, Notion |
+| Frontend | React 18, TypeScript, Vite, Tailwind CSS |
+| Backend | FastAPI, Python 3.13, SQLAlchemy, JWT |
+| AI/ML | LangChain (provider SDK only), OpenAI API (운영), Ollama `qwen2.5:3b` + `nomic-embed-text` (로컬), bge-reranker-base, 커스텀 hybrid RAG |
+| Database | PostgreSQL 15 + pgvector (HNSW) |
+| DevOps | GitHub Actions, Docker Compose |
+
+---
+
+## ⚙️ 사전 설치 항목
+
+| 도구 | 버전 | 설치 가이드 |
+|---|---|---|
+| **Git** | 2.40+ | https://git-scm.com/downloads |
+| **Docker Desktop** | 4.x | https://www.docker.com/products/docker-desktop — Postgres+pgvector 컨테이너 실행용 |
+| **Node.js** | 18+ (권장 20 LTS) | https://nodejs.org — 프론트 실행 |
+| **Python** | **3.10 이상 3.13 미만** | https://www.python.org/downloads/ — backend는 3.13도 가능, ai-service는 `>=3.10,<3.13` 제약 |
+| **uv** (ai-service 패키지 매니저) | 최신 | https://docs.astral.sh/uv/getting-started/installation/ — `pip install uv` 또는 `winget install astral-sh.uv` |
+| **Ollama** (로컬 LLM 런타임) | 0.3+ | https://ollama.com/download — 로컬 개발용 LLM/임베딩 |
+
+> Postgres·pgvector는 Docker 컨테이너로 띄우므로 호스트에 별도 설치 불필요.
+> 운영(데모) 모드에서는 Ollama 대신 OpenAI API를 쓸 수 있습니다 (ai-service `.env`의 `LLM_PROVIDER=openai`).
+
+---
+
+## 🚀 빠른 시작 (로컬 개발)
+
+### 0. 클론 + 환경 변수
+
+```bash
+git clone <repo-url> MachineDoc
+cd MachineDoc
+
+# 루트 .env (docker-compose가 사용)
+cat > .env <<'EOF'
+DB_USER=ax_user
+DB_PASSWORD=9ASs4xPr0j3Ct
+DB_NAME=smart_factory
+DB_HOST=db
+DB_PORT=5433
+DATABASE_URL=postgresql://ax_user:9ASs4xPr0j3Ct@db:5432/smart_factory
+EOF
+```
+
+`backend/.env`, `ai-service/.env`도 각각 필요. 템플릿이 없는 경우 다음 키를 채워 만드세요.
+
+```env
+# backend/.env
+DATABASE_URL=postgresql://ax_user:9ASs4xPr0j3Ct@localhost:5433/smart_factory
+SECRET_KEY=dev-only-secret-key-do-not-use-in-prod-32bytes-min
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+REFRESH_TOKEN_EXPIRE_DAYS=7
+APP_ENV=development
+AI_SERVICE_URL=http://localhost:8001
+
+# ai-service/.env
+LLM_PROVIDER=ollama
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=qwen2.5:3b
+EMBEDDING_PROVIDER=ollama
+EMBEDDING_MODEL=nomic-embed-text
+DATABASE_URL=postgresql+psycopg://ax_user:9ASs4xPr0j3Ct@localhost:5433/smart_factory
+HOST=0.0.0.0
+PORT=8001
+LOG_LEVEL=INFO
+PIPELINE_VERSION=v2
+CHUNKING_STRATEGY=v2
+```
+
+### 1. Postgres + pgvector 컨테이너 기동
+
+```bash
+docker compose up -d db
+# 호스트 5433 → 컨테이너 5432로 매핑됨 (충돌 방지)
+```
+
+### 2. 마이그레이션 + 시드 적용
+
+```bash
+# 1) 스키마 생성 (backend가 SQLAlchemy `Base.metadata.create_all`로 처음 부팅 시 자동 생성)
+# 2) 추가 마이그레이션 SQL
+docker exec -i smart_factory_db psql -U ax_user -d smart_factory < backend/migrations/001_init_prompts.sql
+docker exec -i smart_factory_db psql -U ax_user -d smart_factory < backend/migrations/002_add_saved_manual_equipment_id.sql
+docker exec -i smart_factory_db psql -U ax_user -d smart_factory < backend/migrations/003_rename_notification_occured_at.sql
+
+# 3) 시연용 시드 (설비 5종 + 매뉴얼 5건 + 시연 25개 오류코드 + 24h 로그/알림)
+docker exec -i smart_factory_db psql -U ax_user -d smart_factory < backend/seeds/demo.sql
+```
+
+### 3. Ollama 모델 사전 다운로드 (로컬 개발 시)
+
+```bash
+ollama serve &              # 포트 11434
+ollama pull qwen2.5:3b      # LLM (~2GB)
+ollama pull nomic-embed-text  # 임베딩 (~274MB)
+```
+
+### 4. 각 서비스 기동
+
+세 개 터미널을 열어 각각 실행 (로컬 dev — 핫 리로드).
+
+#### 4-1. backend (포트 8000)
+
+```bash
+cd backend
+python -m venv .venv
+.venv/Scripts/activate          # Windows (Linux/Mac: source .venv/bin/activate)
+pip install -r requirements.txt
+uvicorn app.main:app --port 8000 --reload --workers 1
+```
+
+> **--workers 1 강제**: WebSocket broadcast가 in-process `ConnectionManager` 기반이라 멀티 워커 시 다른 워커 connection으로 broadcast 안 됨.
+
+#### 4-2. ai-service (포트 8001)
+
+```bash
+cd ai-service
+uv sync                          # 가상환경 자동 생성 + 의존성 설치
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8001
+```
+
+> 기동 시 두 startup hook이 자동 실행: `_warmup_embedder` (Ollama 임베딩 모델 페이징) + `_warmup_retrieval` (RAG 파이프라인 빌드 + 더미 retrieval, cold-start 503 방지). 첫 부팅은 30~60초 소요.
+
+#### 4-3. frontend (포트 5173)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+브라우저에서 http://localhost:5173 접속.
+
+### 5. PDF 매뉴얼 색인 (선택)
+
+`ai-service/manuals/` 안 8개 PDF는 사전에 색인되어 있어야 RAG가 답합니다. 시드 DB가 이미 있다면 스킵, 처음 셋업하는 경우 ai-service `/api/v1/ingest`로 업로드하거나 ai-service README의 일괄 색인 스크립트를 사용하세요.
+
+---
+
+## 🐳 Docker Compose 일괄 기동 (대안)
+
+호스트에 Python/Node를 안 깔고 다 컨테이너로 띄우려면:
+
+```bash
+docker compose up -d
+```
+
+> 단, frontend는 `docker-compose.yml`에 정의돼 있지 않으므로 호스트에서 `npm run dev` 별도 실행 필요. Ollama도 호스트에서 따로 띄워야 함 (compose 컨테이너는 `host.docker.internal:11434`로 접근).
+
+---
+
+## 🧪 동작 검증 (스모크 테스트)
+
+| 대상 | 명령 | 기대 결과 |
+|---|---|---|
+| ai-service health | `curl http://localhost:8001/health` | `{"status":"ok"}` |
+| ai-service RAG | `curl -X POST http://localhost:8001/api/v1/search -H "Content-Type: application/json" -d '{"error_code":"E5"}'` | `status:success` + ga700.pdf 인용 |
+| backend docs | http://localhost:8000/docs | Swagger UI |
+| frontend | http://localhost:5173 | 로그인 화면 |
+
+시연용 오류코드 25개는 `ai-service/.claude/planning/demo_error_codes_25.md` 참고 (gitignored, 발표자 전용).
 
 ---
 
