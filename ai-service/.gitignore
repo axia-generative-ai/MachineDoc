@@ -62,7 +62,7 @@ tests/eval/results/
 
 # Real customer manuals — never committed (Phase 6 differentiation rework).
 # Cross-validate against synthetic manuals from scripts/generate_manuals.py.
-manuals/
+manuals/*
 
 # Manual web harness & backend stub — local validation only, not production.
 tests/manual/
