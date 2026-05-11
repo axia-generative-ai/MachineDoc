@@ -46,6 +46,8 @@ export function AdminManualRegistration({ onUploadSuccess }: Props = {}) {
       setErrorMessage('버전을 입력해주세요.');
       return;
     }
+    // errorCodes는 비워도 OK — backend가 ai-service ingest 응답의 error_codes[]로 자동 매칭한다.
+    const errorCodes = parseErrorCodes(values.errorCodes);
 
     setIsSubmitting(true);
     try {
@@ -54,7 +56,7 @@ export function AdminManualRegistration({ onUploadSuccess }: Props = {}) {
         category: values.category,
         version: values.version.trim(),
         equipmentId: values.equipmentId,
-        errorCodes: parseErrorCodes(values.errorCodes),
+        errorCodes,
         file: values.file,
       });
       setSuccessMessage(`업로드 완료: ${result.title} (manual_id=${result.manualId})`);

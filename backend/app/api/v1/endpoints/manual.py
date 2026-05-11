@@ -108,7 +108,7 @@ async def upload_manual(
     category: str = Form(..., description="설비 분류 또는 카테고리", examples=["점검"]),
     version: str = Form(..., description="매뉴얼 버전", examples=["v1.0.2"]),
     equipment_id: Optional[int] = Form(None, description="대상 설비 ID(선택). 알림 → 매뉴얼 매칭에 사용"),
-    error_codes: List[str] = Form(..., description="매뉴역과 연결될 에러 코드 리스트", examples=[["E0001", "E0023"]]),
+    error_codes: List[str] = Form(default_factory=list, description="에러 코드 리스트(선택). 비우면 ai-service가 PDF 본문에서 자동 추출.", examples=[["E0001", "E0023"]]),
     file: UploadFile = File(..., description="업로드할 PDF 파일"),
     db: Session = Depends(deps.get_db),
     current_user: User = Depends(deps.get_current_admin_user)

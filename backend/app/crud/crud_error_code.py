@@ -11,7 +11,7 @@ class CRUDErrorCode:
         for code_str in codes:
             new_error_code = ErrorCode(
                 manual_id=manual_id,
-                code=code_str
+                code_name=code_str,
             )
             db.add(new_error_code)
 
