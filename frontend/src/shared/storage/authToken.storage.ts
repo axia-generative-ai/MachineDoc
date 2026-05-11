@@ -1,25 +1,19 @@
 const ACCESS_TOKEN_KEY = 'MachineDoc.accessToken';
-const REFRESH_TOKEN_KEY = 'MachineDoc.refreshToken';
+// Refresh token은 httpOnly 쿠키로 이전. localStorage 키는 legacy 잔여물 제거용으로만 유지.
+const LEGACY_REFRESH_TOKEN_KEY = 'MachineDoc.refreshToken';
 
 export const authTokenStorage = {
   getAccessToken() {
     return window.localStorage.getItem(ACCESS_TOKEN_KEY);
   },
-  getRefreshToken() {
-    return window.localStorage.getItem(REFRESH_TOKEN_KEY);
-  },
   setAccessToken(token: string) {
     window.localStorage.setItem(ACCESS_TOKEN_KEY, token);
   },
-  setRefreshToken(token: string) {
-    window.localStorage.setItem(REFRESH_TOKEN_KEY, token);
-  },
-  setTokens(tokens: { accessToken: string; refreshToken: string }) {
+  setTokens(tokens: { accessToken: string }) {
     window.localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
-    window.localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
   },
   clear() {
     window.localStorage.removeItem(ACCESS_TOKEN_KEY);
-    window.localStorage.removeItem(REFRESH_TOKEN_KEY);
+    window.localStorage.removeItem(LEGACY_REFRESH_TOKEN_KEY);
   },
 };

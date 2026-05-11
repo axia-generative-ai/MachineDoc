@@ -4,7 +4,6 @@ import type { AuthSession, LoginCommand, SignupCommand } from '../model/auth.typ
 
 type BackendAuthSession = {
   access_token: string;
-  refresh_token: string;
   token_type: string;
   user_info: {
     user_id?: number;
@@ -36,7 +35,6 @@ function normalizeState(state: string): UserState {
 function mapAuthSession(data: BackendAuthSession): AuthSession {
   return {
     accessToken: data.access_token,
-    refreshToken: data.refresh_token,
     tokenType: data.token_type,
     user: {
       id: String(data.user_info.user_id ?? data.user_info.email),

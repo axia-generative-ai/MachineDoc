@@ -46,7 +46,6 @@ export function useLogin(options: LoginOptions = {}) {
       // 로그인 성공 후 다음 요청부터 Authorization 헤더가 붙도록 토큰과 세션을 저장한다.
       authTokenStorage.setTokens({
         accessToken: session.accessToken,
-        refreshToken: session.refreshToken,
       });
       authSessionStorage.setSession(session);
 

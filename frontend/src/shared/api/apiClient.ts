@@ -1,11 +1,21 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { env } from '../config/env';
+import { authSessionStorage } from '../storage/authSession.storage';
 import { authTokenStorage } from '../storage/authToken.storage';
 import { ApiError } from './apiError';
 
 type ErrorResponse = {
   message?: string;
   detail?: string | { msg?: string } | Array<{ msg?: string }>;
+};
+
+type RefreshResponse = {
+  access_token: string;
+  token_type: string;
+};
+
+type RetryableRequestConfig = InternalAxiosRequestConfig & {
+  _retry?: boolean;
 };
 
 function getErrorMessage(error: AxiosError<ErrorResponse>) {
@@ -19,8 +29,16 @@ function getErrorMessage(error: AxiosError<ErrorResponse>) {
   return error.message;
 }
 
+function shouldAttemptRefresh(error: AxiosError<ErrorResponse>) {
+  const status = error.response?.status;
+  const url = error.config?.url ?? '';
+
+  return status === 401 && !url.includes('/auth/login') && !url.includes('/auth/refresh');
+}
+
 export const apiClient = axios.create({
   baseURL: env.apiBaseUrl,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -29,7 +47,6 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use((config) => {
   const accessToken = authTokenStorage.getAccessToken();
 
-  // 로그인 이후 요청은 공통으로 Authorization 헤더를 붙인다.
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
@@ -39,7 +56,38 @@ apiClient.interceptors.request.use((config) => {
 
 apiClient.interceptors.response.use(
   (response) => response,
-  (error: AxiosError<ErrorResponse>) => {
+  async (error: AxiosError<ErrorResponse>) => {
+    const originalRequest = error.config as RetryableRequestConfig | undefined;
+
+    if (originalRequest && !originalRequest._retry && shouldAttemptRefresh(error)) {
+      originalRequest._retry = true;
+
+      try {
+        const { data } = await axios.post<RefreshResponse>(
+          `${env.apiBaseUrl}/auth/refresh`,
+          undefined,
+          { withCredentials: true },
+        );
+
+        authTokenStorage.setAccessToken(data.access_token);
+
+        const session = authSessionStorage.getSession();
+        if (session) {
+          authSessionStorage.setSession({
+            ...session,
+            accessToken: data.access_token,
+            tokenType: data.token_type,
+          });
+        }
+
+        originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
+        return apiClient(originalRequest);
+      } catch {
+        authTokenStorage.clear();
+        authSessionStorage.clear();
+      }
+    }
+
     const status = error.response?.status;
     const message = getErrorMessage(error);
 

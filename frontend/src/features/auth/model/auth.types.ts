@@ -15,7 +15,6 @@ export type SignupCommand = {
 
 export type AuthSession = {
   accessToken: string;
-  refreshToken: string;
   tokenType: string;
   user: User;
 };
