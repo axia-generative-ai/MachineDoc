@@ -1,5 +1,5 @@
-const ACCESS_TOKEN_KEY = 'factoryguard.accessToken';
-const REFRESH_TOKEN_KEY = 'factoryguard.refreshToken';
+const ACCESS_TOKEN_KEY = 'MachineDoc.accessToken';
+const REFRESH_TOKEN_KEY = 'MachineDoc.refreshToken';
 
 export const authTokenStorage = {
   getAccessToken() {

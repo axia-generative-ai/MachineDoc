@@ -13,7 +13,7 @@ type AuthShellProps = {
 export function AuthShell({ children, title, eyebrow, description }: AuthShellProps) {
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#03070b] text-slate-100">
-      <img className="absolute inset-0 h-full w-full object-cover" src={authHeroImage} alt="FactoryGuard smart factory control room" />
+      <img className="absolute inset-0 h-full w-full object-cover" src={authHeroImage} alt="MachineDoc smart factory control room" />
       <div className="absolute inset-0 bg-slate-950/45" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(37,99,235,0.16),transparent_34%),linear-gradient(135deg,rgba(3,7,11,0.78),rgba(7,16,24,0.42),rgba(3,7,11,0.72))]" />
 

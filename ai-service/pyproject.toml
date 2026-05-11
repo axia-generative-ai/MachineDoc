@@ -1,7 +1,7 @@
 [project]
-name = "factoryguard-ai-service"
+name = "MachineDoc-ai-service"
 version = "0.1.0"
-description = "FactoryGuard AI service: equipment manual RAG and anomaly analysis."
+description = "MachineDoc AI service: equipment manual RAG and anomaly analysis."
 readme = "README.md"
 requires-python = ">=3.10,<3.13"
 license = { text = "Proprietary" }

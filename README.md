@@ -1,4 +1,4 @@
-# 🏭 FactoryGuard
+# 🏭 MachineDoc
 
 > **Smart Factory Anomaly Detection & RAG-based Manual Retrieval AI Prototype**
 
@@ -8,7 +8,7 @@
 
 ## 📖 Project Overview
 
-FactoryGuard is an AI service that instantly retrieves the relevant manual via RAG when an equipment error code occurs on the factory floor, and automatically guides operators through diagnosis and corrective procedures by analyzing virtual sensor logs.
+MachineDoc is an AI service that instantly retrieves the relevant manual via RAG when an equipment error code occurs on the factory floor, and automatically guides operators through diagnosis and corrective procedures by analyzing virtual sensor logs.
 
 ### Core Value
 

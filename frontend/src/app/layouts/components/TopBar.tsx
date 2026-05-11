@@ -133,7 +133,7 @@ export function TopBar({ isSidebarOpen, onMenuClick }: TopBarProps) {
             <div className="absolute right-0 top-[52px] w-60 overflow-hidden rounded-2xl border border-slate-700/80 bg-[#08131f]/95 p-2 shadow-[0_22px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl">
               <div className="border-b border-slate-700/70 px-3 py-3">
                 <p className="text-sm font-bold text-slate-100">{userDisplayName}</p>
-                <p className="mt-1 truncate text-xs font-medium text-slate-500">{user?.email ?? 'FactoryGuard Operator'}</p>
+                <p className="mt-1 truncate text-xs font-medium text-slate-500">{user?.email ?? 'MachineDoc Operator'}</p>
               </div>
               <button
                 type="button"

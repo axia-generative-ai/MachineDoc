@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 export type ThemePreference = 'dark' | 'light';
 
-const THEME_KEY = 'factoryguard.theme';
+const THEME_KEY = 'MachineDoc.theme';
 
 function isThemePreference(value: string | null): value is ThemePreference {
   return value === 'dark' || value === 'light';

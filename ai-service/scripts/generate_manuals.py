@@ -473,7 +473,7 @@ def build_manual(eq: Equipment) -> tuple[Path, int, dict[str, list[int]]]:
     b.title(f"{eq.equipment_name} 운영 매뉴얼")
     b.line(f"장비 ID: {eq.equipment_id}")
     b.line("문서 버전: v1.0  |  발행일: 2026-04-30")
-    b.line("발행: FactoryGuard Documentation Team")
+    b.line("발행: MachineDoc Documentation Team")
     b.paragraph("")
     b.heading("개요")
     b.paragraph(eq.overview)
@@ -558,7 +558,7 @@ def build_manual(eq: Equipment) -> tuple[Path, int, dict[str, list[int]]]:
     # ----- final appendix -----
     b.page_break()
     b.heading("6. 부록 — 연락처 및 폐기 안내")
-    b.paragraph("기술 지원: support@factoryguard.example  /  +82-2-000-0000")
+    b.paragraph("기술 지원: support@MachineDoc.example  /  +82-2-000-0000")
     b.paragraph(
         "장비 폐기 시 작동유 및 윤활유는 산업 폐기물 처리 규정에 따라 위탁 처리하고, "
         "전자 부품은 RoHS 기준에 맞춰 재활용합니다."
@@ -595,7 +595,7 @@ def main() -> None:
     for eq, path, pages in manifest_rows:
         lines.append(
             f"| {eq.equipment_name} | `{eq.equipment_id}` | `{path.name}` | {pages} | "
-            "Synthetic (FactoryGuard internal, MIT for project use) |"
+            "Synthetic (MachineDoc internal, MIT for project use) |"
         )
     lines += [
         "",

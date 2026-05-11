@@ -51,7 +51,7 @@ class Settings(BaseSettings):
     # ---- Database ----
     # Default targets the compose db (ankane/pgvector:latest, PG15) bound
     # to host port 5433. Backend owner locked the smart_factory / ax_user
-    # naming on 2026-05-09. The legacy host PG17 `factoryguard` DB on
+    # naming on 2026-05-09. The legacy host PG17 `MachineDoc` DB on
     # :5432 is kept only for backup. Override via DATABASE_URL env var.
     database_url: str = (
         "postgresql+psycopg://ax_user:9ASs4xPr0j3Ct@localhost:5433/smart_factory"

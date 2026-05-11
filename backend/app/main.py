@@ -5,7 +5,7 @@ from app.db.base import Base
 
 from app.api.v1.endpoints import dashboard, auth, users, search, manual, log, notification, websocket, prompts
 
-app = FastAPI(title="FactoryGuard API",
+app = FastAPI(title="MachineDoc API",
     description="스마트 팩토리 보안 및 관리 시스템을 위한 백엔드 API 문서입니다.",
     version="1.0.0"
 )

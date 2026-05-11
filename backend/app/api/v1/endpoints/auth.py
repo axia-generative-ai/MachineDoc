@@ -23,7 +23,7 @@ router = APIRouter()
 )
 def register_user(obj_in: UserCreate, db: Session = Depends(get_db)):
     """
-    FactoryGuard 시스템에 새로운 사용자를 등록합니다.
+    MachineDoc 시스템에 새로운 사용자를 등록합니다.
 
     - **중복 검사**: 입력된 **email**이 이미 DB에 존재하는지 확인합니다. 중복 시 400 에러를 반환합니다.
     - **비밀번호 암호화**: 전달된 평문 비밀번호는 보안을 위해 **Bcrypt**로 해시화되어 저장됩니다.

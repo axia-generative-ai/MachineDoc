@@ -1,4 +1,4 @@
-# 🏭 FactoryGuard
+# 🏭 MachineDoc
 
 > **스마트팩토리 설비 이상감지·매뉴얼 RAG AI 프로토타입**
 

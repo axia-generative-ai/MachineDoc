@@ -66,8 +66,7 @@ function SidebarLink({ to, label, icon: Icon, accent }: SidebarItem) {
       to={to}
       end={to === '/'}
       className={({ isActive }) =>
-        `group flex h-11 items-center gap-3 rounded-lg px-4 text-[16px] transition ${
-          isActive ? activeClasses[accent] : 'text-slate-300 hover:bg-white/[0.04] hover:text-white light:hover:bg-slate-200/70 light:hover:text-slate-950'
+        `group flex h-11 items-center gap-3 rounded-lg px-4 text-[16px] transition ${isActive ? activeClasses[accent] : 'text-slate-300 hover:bg-white/[0.04] hover:text-white light:hover:bg-slate-200/70 light:hover:text-slate-950'
         }`
       }
     >
@@ -95,13 +94,12 @@ export function Sidebar({ isOpen }: SidebarProps) {
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-20 flex w-[78vw] max-w-[320px] flex-col border-r border-slate-700/70 bg-[#071018]/95 px-4 py-7 shadow-2xl shadow-black/40 backdrop-blur-xl transition-transform duration-300 ease-out lg:w-[252px] lg:max-w-none ${
-        isOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}
+      className={`fixed inset-y-0 left-0 z-20 flex w-[78vw] max-w-[320px] flex-col border-r border-slate-700/70 bg-[#071018]/95 px-4 py-7 shadow-2xl shadow-black/40 backdrop-blur-xl transition-transform duration-300 ease-out lg:w-[252px] lg:max-w-none ${isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
     >
       <Link to="/dashboard" className="mb-8 flex shrink-0 items-center gap-2 px-1 text-blue-400">
         <ShieldCheck className="h-8 w-8 fill-blue-500/20" strokeWidth={2.6} />
-        <span className="text-[23px] font-extrabold">FACTORYGUARD</span>
+        <span className="text-[23px] font-extrabold">MachineDoc</span>
       </Link>
 
       <div className="scrollbar-hide -mx-1 min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-1 pb-6">

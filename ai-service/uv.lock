@@ -345,7 +345,7 @@ wheels = [
 ]
 
 [[package]]
-name = "factoryguard-ai-service"
+name = "MachineDoc-ai-service"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

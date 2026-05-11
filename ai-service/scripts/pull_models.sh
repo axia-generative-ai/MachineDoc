@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Pull the Ollama models required by the FactoryGuard AI service.
+# Pull the Ollama models required by the MachineDoc AI service.
 #
 # Defaults track app/config.py:
 #   - LLM:       qwen2.5:3b (smaller / faster than the original qwen3.5:9b;

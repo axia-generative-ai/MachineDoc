@@ -1,11 +1,11 @@
 openapi: 3.0.3
 
 info:
-  title: FactoryGuard AI Service
+  title: MachineDoc AI Service
   version: 0.1.0
   description: |
     Equipment manual RAG (`/search`) and anomaly analysis (`/anomaly`)
-    HTTP API consumed by the FactoryGuard BackEnd.
+    HTTP API consumed by the MachineDoc BackEnd.
 
     The service is provider-agnostic: `LLM_PROVIDER` and
     `EMBEDDING_PROVIDER` env vars switch between Ollama (local dev)

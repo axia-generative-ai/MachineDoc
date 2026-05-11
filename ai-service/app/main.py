@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=get_settings().log_level)
 
 app = FastAPI(
-    title="FactoryGuard AI 서비스",
+    title="MachineDoc AI 서비스",
     version="0.1.0",
     description=(
         "스마트팩토리 설비 매뉴얼 RAG 검색과 이상감지 분석을 제공하는 AI 서비스입니다.\n\n"

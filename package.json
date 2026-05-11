@@ -1,5 +1,5 @@
 {
-  "name": "factoryguard",
+  "name": "MachineDoc",
   "private": true,
   "scripts": {
     "dev": "npm --prefix frontend run dev",
