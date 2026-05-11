@@ -39,6 +39,21 @@ logger = logging.getLogger(__name__)
 
 RULES_PATH = Path(__file__).resolve().parents[2] / "data" / "anomaly_rules.json"
 
+# Backend equipment_code → indexed manual equipment_id.
+# Backend rules use synthetic equipment codes (EQ-XXX-NNN) but the
+# vectorstore is populated with real industrial manuals indexed under
+# vendor-specific equipment_ids. Without this mapping the RAG context
+# filter returns 0 chunks and the LLM answers without manual citations.
+# Mapping rationale: pick the indexed manual whose domain best covers
+# the backend equipment's failure modes.
+_EQUIPMENT_MANUAL_MAP: dict[str, str] = {
+    "EQ-MOTOR-001": "eq_yaskawa_ga700",      # AC drive — 모터 제어/보호
+    "EQ-CONVEYOR-002": "eq_rockwell_pf520",  # PowerFlex drive — 컨베이어 표준
+    "EQ-PRESS-003": "eq_fanuc_0m",           # CNC — 프레스 제어
+    "EQ-ROBOT-004": "eq_abb_irb",            # 산업용 로봇 troubleshooting
+    "EQ-WELDING-005": "eq_mitsubishi_servo", # 서보 + 용접 자동화
+}
+
 # Same dual-injection pattern as RagPipeline (see project_qwen3_no_think
 # memory): system role + user content prefix.
 _NO_THINK = SystemMessage(content="/no_think")
@@ -62,7 +77,7 @@ _OPERATORS = {
 # 4-section format defined in `prompts/anomaly_analysis.txt`.
 _ERROR_CODE_RE = re.compile(r"\bE-\d{3}\b")
 _MANUAL_REF_RE = re.compile(
-    r"\(\s*출처\s*[::]\s*(?P<file>[^,]+?\.pdf)\s*,\s*p\.?\s*(?P<page>\d+)\s*\)",
+    r"\(\s*(?:출처|매뉴얼|파일명)\s*[::]\s*(?P<file>[^,]+?\.pdf)\s*,\s*p\.?\s*(?P<page>\d+)\s*\)",
 )
 
 
@@ -162,10 +177,13 @@ class AnomalyPipeline:
         # context for the LLM.
         query = self._compose_retrieval_query(log, rule_result)
         qvec = self.embedder.embed_query(query)
+        # Map backend equipment_code to indexed manual; if no mapping,
+        # fall back to all-manual search rather than returning 0 chunks.
+        manual_eq = _EQUIPMENT_MANUAL_MAP.get(log.equipment_id)
         chunks = self.store.similarity_search(
             qvec,
             k=self.settings.retrieval_top_k,
-            equipment_id=log.equipment_id,
+            equipment_id=manual_eq,
         )
         kept = [c for c in chunks if c.similarity >= self.settings.similarity_threshold]
         context = self._format_context(kept) if kept else "(관련 매뉴얼 컨텍스트 없음)"

@@ -1,0 +1,21 @@
+# Web Engine
+fastapi
+uvicorn[standard]
+
+# HTTP Client
+httpx
+
+# Utilities
+python-dotenv
+python-multipart
+pydantic[email]
+
+# Database Layer
+sqlalchemy
+psycopg2-binary
+alembic
+
+# Security
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt==4.0.1

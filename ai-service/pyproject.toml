@@ -1,7 +1,7 @@
 [project]
-name = "factoryguard-ai-service"
+name = "MachineDoc-ai-service"
 version = "0.1.0"
-description = "FactoryGuard AI service: equipment manual RAG and anomaly analysis."
+description = "MachineDoc AI service: equipment manual RAG and anomaly analysis."
 readme = "README.md"
 requires-python = ">=3.10,<3.13"
 license = { text = "Proprietary" }
@@ -9,6 +9,7 @@ authors = [{ name = "Chanwoo Lim" }]
 
 dependencies = [
     "fastapi>=0.115.0",
+    "python-multipart>=0.0.9",
     "uvicorn[standard]>=0.30.0",
     "pydantic>=2.7.0",
     "pydantic-settings>=2.4.0",
@@ -24,6 +25,7 @@ dependencies = [
     "pgvector>=0.3.0",
     "sqlalchemy>=2.0.30",
     "tenacity>=9.0.0",
+    "sentence-transformers>=5.4.1",
 ]
 
 [project.optional-dependencies]

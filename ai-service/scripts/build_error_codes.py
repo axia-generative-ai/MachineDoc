@@ -54,7 +54,7 @@ def main() -> None:
 
     schema = {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "title": "FactoryGuard error code records",
+        "title": "MachineDoc error code records",
         "type": "array",
         "items": {
             "type": "object",

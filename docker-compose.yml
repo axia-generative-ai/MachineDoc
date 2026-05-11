@@ -1,0 +1,53 @@
+services:
+  db:
+    image: ankane/pgvector:latest
+    container_name: smart_factory_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: smart_factory_api
+    # WS broadcast는 in-process ConnectionManager라 단일 워커 필수.
+    # 멀티 워커는 다른 워커의 connection 으로 broadcast 안 됨 (Redis Pub/Sub 도입 전까지).
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --workers 1
+    volumes:
+      - ./backend:/code
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      # 컨테이너 안에서 localhost:8001은 backend 자기 자신을 가리킨다.
+      # ai-service 컨테이너에 도달하려면 compose 서비스명을 사용해야 한다.
+      AI_SERVICE_URL: http://smart_factory_ai:8001
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - ai-service
+
+  # ai-service runs on :8001 (locked 2026-05-08). Reaches Ollama on the
+  # host via host.docker.internal:11434 (dev/debug only — production
+  # provider swap to OpenAI is a later decision).
+  ai-service:
+    build: ./ai-service
+    container_name: smart_factory_ai
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8001
+    volumes:
+      - ./ai-service:/code
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      PIPELINE_VERSION: v2
+      CHUNKING_STRATEGY: v2
+    ports:
+      - "8001:8001"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - db

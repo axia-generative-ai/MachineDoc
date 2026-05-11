@@ -4,6 +4,7 @@
 node_modules/
 dist/
 build/
+*.tsbuildinfo
 .env.local
 .next/
 .nuxt/
@@ -55,12 +56,18 @@ desktop.ini
 # =====================
 # AI / Data
 # =====================
-ai-service/data/chroma_db/
 *.sqlite3
 *.db
+.manuals/
+postgres_data/
 
 # =====================
 # Logs
 # =====================
 *.log
 logs/
+
+# =====================
+# Claude Code workspace state
+# =====================
+.claude/

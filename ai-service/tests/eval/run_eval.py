@@ -183,7 +183,7 @@ def write_reports(results: list[CaseResult], summary: dict, out_path: Path) -> N
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="FactoryGuard RAG eval runner")
+    ap = argparse.ArgumentParser(description="MachineDoc RAG eval runner")
     ap.add_argument("--test-set", type=Path, default=DEFAULT_TEST_SET)
     ap.add_argument(
         "--output",

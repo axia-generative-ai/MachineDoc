@@ -78,7 +78,7 @@ def _percentile(xs: list[int], p: float) -> float:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="FactoryGuard end-to-end latency bench")
+    ap = argparse.ArgumentParser(description="MachineDoc end-to-end latency bench")
     ap.add_argument("--test-set", type=Path, default=DEFAULT_TEST_SET)
     ap.add_argument("--output", type=Path, default=None)
     ap.add_argument("--warmup", type=int, default=1, help="warmup runs to discard")

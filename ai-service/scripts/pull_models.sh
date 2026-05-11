@@ -1,17 +1,22 @@
 #!/usr/bin/env bash
-# Pull the Ollama models required by the FactoryGuard AI service.
+# Pull the Ollama models required by the MachineDoc AI service.
 #
-# WBS v1.0 originally specified `qwen3:8b`. The dev environment for this
-# project standardises on `qwen3.5:9b`, which is what this script pulls.
-# The embedding model `bge-m3` is unchanged.
+# Defaults track app/config.py:
+#   - LLM:       qwen2.5:3b (smaller / faster than the original qwen3.5:9b;
+#                see project_session_progress / config.py for context).
+#   - Embedding: nomic-embed-text (768d). bge-m3 was deprecated after a
+#                reproducible Ollama NaN failure on plain English input.
+#
+# Override either via environment:
+#   OLLAMA_MODEL=qwen3.5:9b EMBEDDING_MODEL=bge-m3 bash scripts/pull_models.sh
 #
 # Usage:
 #   bash scripts/pull_models.sh
 
 set -euo pipefail
 
-LLM_MODEL="${OLLAMA_MODEL:-qwen3.5:9b}"
-EMBED_MODEL="${EMBEDDING_MODEL:-bge-m3}"
+LLM_MODEL="${OLLAMA_MODEL:-qwen2.5:3b}"
+EMBED_MODEL="${EMBEDDING_MODEL:-nomic-embed-text}"
 
 if ! command -v ollama >/dev/null 2>&1; then
     echo "ERROR: ollama CLI not found on PATH." >&2
