@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-from app.models.user import User, UserRole
+from app.models.user import User, UserRole, UserState
 from app.crud.crud_user import user_repository
 from app.schemas.user import UserCreate, UserUpdateByAdmin, UserUpdateMe
 
@@ -35,6 +35,7 @@ class UserService:
                 detail="해당 사용자를 찾을 수 없습니다."
             )
         
+        obj_in.state = UserState.LOGOUT
         # 2. CRUD 호출하여 정보 업데이트
         return user_repository.update_user_by_admin(db, db_user=db_user, obj_in=obj_in)
 

@@ -116,50 +116,52 @@ class SearchService:
         return {"result": ai_result, "history_id": history_id, "citations": []}
 
     async def process_ai_query(self, db: Session, data: AIQueryRequest, user_id: int):
-        # 1. 초기 상태 설정
-        ai_result = None
-        search_status = "PENDING"
-        raise_exception = False
-        
-        # 2. 질의 문구 생성 (query로 사용될 내용)
         query_text = f"설비 {data.equipment_code} / {data.data_type} / 수치: {data.value}"
-
+        ai_result = {}
+        search_status = "PENDING"
+        
         try:
-            # 3. AI 서버 호출 (실제 URL로 교체 필요)
-            # 여기서는 예시로 httpx를 사용한 호출 구조를 유지합니다.
             async with httpx.AsyncClient() as client:
-                # response = await client.post("AI_SERVER_URL", json=data.model_dump())
+                # 실제 호출 시 주석 해제
+                # response = await client.post(settings.AI_SERVER_URL, json=data.model_dump())
                 # response.raise_for_status()
                 # ai_result = response.json()
                 
                 # 테스트용 가상 응답
-                ai_result = {"answer": f"{data.equipment_code}의 분석 결과입니다. 수치가 임계치를 초과했습니다."}
+                ai_result = {"answer": f"{data.equipment_code}의 분석 결과입니다."}
                 search_status = "COMPLETED"
-                return ai_result
-
+                
+                # 결과가 나왔으므로 여기서 리턴하지 않고 아래로 내려가서 DB 저장 후 리턴
+                
         except Exception as e:
-            # 실패 상태 및 내용 기록 준비
             search_status = "AI_ERROR"
             ai_result = {"error": str(e)}
-            raise_exception = True
-            
+            # 로깅 추가 (디버깅용)
+            print(f"AI Service Error: {e}")
+            # 여기서 바로 raise 하지 않고, DB 기록 후에 처리합니다.
+
         finally:
-            # 4. 결과와 상관없이 무조건 검색 이력 저장
-            # 이 로직은 API 호출의 '성공/실패' 여부와 관계없이 DB에 기록을 남깁니다.
-            search_history_repository.create_history(
-                db, 
-                user_id=user_id, 
-                log_id=data.log_id,
-                query=query_text,
-                result=json.dumps(ai_result, ensure_ascii=False),
-                status=search_status
+            # 이력 저장 (try/except 어느 쪽에서 내려와도 실행됨)
+            try:
+                search_history_repository.create_history(
+                    db, 
+                    user_id=user_id, 
+                    log_id=data.log_id,
+                    query=query_text,
+                    result=json.dumps(ai_result, ensure_ascii=False),
+                    status=search_status
+                )
+            except Exception as db_e:
+                print(f"Database Error (History logging failed): {db_e}")
+                # 이력 저장 실패가 AI 결과 반환을 막지 않도록 예외 처리
+
+        # 에러 상태였다면 여기서 예외 발생
+        if search_status == "AI_ERROR":
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE, 
+                detail="AI 분석 처리 중 오류가 발생했습니다."
             )
 
-            # 에러가 발생했었다면 저장 완료 후 유저에게 예외 전달
-            if raise_exception:
-                raise HTTPException(
-                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE, 
-                    detail="AI 분석 요청 처리 중 오류가 발생하여 이력을 기록하고 중단했습니다."
-                )
+        return ai_result # 성공 시 최종 결과 반환
             
 search_service = SearchService()

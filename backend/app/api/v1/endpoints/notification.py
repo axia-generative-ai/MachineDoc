@@ -31,7 +31,7 @@ def list_notifications(
     return notification_repository.list_with_equipment(db, limit=limit)
 
 @router.get(
-    "/", 
+    "/filter", 
     status_code=200,
     summary="알림 목록 조회 (필터 및 페이지네이션)",
     responses={
