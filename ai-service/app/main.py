@@ -52,6 +52,31 @@ def _warmup_embedder() -> None:
         logger.warning("embedder warmup failed: %s", exc)
 
 
+@app.on_event("startup")
+def _warmup_retrieval() -> None:
+    """Build the RAG pipeline and run one dummy retrieval at startup.
+
+    First /api/v1/search call otherwise pays: pipeline build (vector
+    store, BM25 index, reranker model load to GPU) + first pgvector
+    query + first reranker forward pass. That stack regularly blows past
+    backend's 30 s httpx timeout → backend returns 503. LLM is skipped —
+    we only warm the retriever; the LLM hot-path is paged in by the
+    embedder warmup above and the first real call.
+    """
+    try:
+        from app.api.search import _pipeline
+
+        pipeline = _pipeline()
+        retriever = getattr(pipeline, "retriever", None)
+        if retriever is None:
+            logger.info("retrieval warmup skipped (pipeline has no retriever)")
+            return
+        retriever.retrieve("warmup")
+        logger.info("retrieval pipeline warmed up at startup")
+    except Exception as exc:  # noqa: BLE001 — startup must not crash the app
+        logger.warning("retrieval warmup failed: %s", exc)
+
+
 @app.get("/health", tags=["헬스체크"], summary="liveness 확인")
 def health() -> dict[str, str]:
     """서비스 가동 여부만 확인. DB / Ollama 상태는 보지 않음."""
