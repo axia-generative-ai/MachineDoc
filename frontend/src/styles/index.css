@@ -8,6 +8,11 @@
   background: #03070b;
 }
 
+:root[data-theme='light'] {
+  color-scheme: light;
+  background: #eef4f8;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -20,7 +25,125 @@ body {
   color: #f8fafc;
 }
 
+:root[data-theme='light'] body {
+  background: #eef4f8;
+  color: #102033;
+}
+
+:root[data-theme='light'] .bg-factory-radial {
+  background-image:
+    radial-gradient(circle at 18% 10%, rgba(35, 132, 255, 0.13), transparent 30%),
+    radial-gradient(circle at 88% 0%, rgba(16, 185, 129, 0.11), transparent 24%),
+    linear-gradient(135deg, #f7fbff 0%, #eef5f9 48%, #e7f0f6 100%);
+}
+
+:root[data-theme='light'] [class*='bg-slate-950'],
+:root[data-theme='light'] [class*='bg-slate-900'],
+:root[data-theme='light'] [class*='bg-slate-800'],
+:root[data-theme='light'] [class*='bg-[#071018]'],
+:root[data-theme='light'] [class*='bg-[#08131f]'],
+:root[data-theme='light'] [class*='bg-[#050b12]'] {
+  background-color: rgba(255, 255, 255, 0.86) !important;
+}
+
+:root[data-theme='light'] [class*='bg-slate-900/60'],
+:root[data-theme='light'] [class*='bg-slate-900/30'],
+:root[data-theme='light'] [class*='bg-slate-800/60'] {
+  background-color: rgba(226, 232, 240, 0.95) !important;
+}
+
+:root[data-theme='light'] [class*='border-slate-700'],
+:root[data-theme='light'] [class*='border-slate-800'],
+:root[data-theme='light'] [class*='border-slate-600'] {
+  border-color: rgba(148, 163, 184, 0.5) !important;
+}
+
+:root[data-theme='light'] [class*='text-white'],
+:root[data-theme='light'] [class*='text-slate-100'],
+:root[data-theme='light'] [class*='text-slate-200'] {
+  color: #102033 !important;
+}
+
+:root[data-theme='light'] [class*='text-slate-300'],
+:root[data-theme='light'] [class*='text-slate-400'] {
+  color: #334155 !important;
+}
+
+:root[data-theme='light'] [class*='text-slate-500'] {
+  color: #475569 !important;
+}
+
+:root[data-theme='light'] [class*='text-blue-300'],
+:root[data-theme='light'] [class*='text-blue-400'] {
+  color: #1d4ed8 !important;
+}
+
+:root[data-theme='light'] [class*='text-emerald-300'],
+:root[data-theme='light'] [class*='text-emerald-400'] {
+  color: #047857 !important;
+}
+
+:root[data-theme='light'] [class*='text-amber-300'],
+:root[data-theme='light'] [class*='text-amber-400'] {
+  color: #b45309 !important;
+}
+
+:root[data-theme='light'] [class*='text-red-300'],
+:root[data-theme='light'] [class*='text-red-400'] {
+  color: #b91c1c !important;
+}
+
+:root[data-theme='light'] [class~='bg-blue-600'],
+:root[data-theme='light'] [class~='bg-blue-500'],
+:root[data-theme='light'] [class~='bg-red-600'],
+:root[data-theme='light'] [class~='bg-red-500'],
+:root[data-theme='light'] [class~='bg-amber-500'],
+:root[data-theme='light'] [class~='bg-emerald-500'],
+:root[data-theme='light'] [class~='bg-emerald-600'],
+:root[data-theme='light'] [class~='bg-slate-500'] {
+  color: #ffffff !important;
+}
+
+:root[data-theme='light'] [class~='bg-blue-600'] *,
+:root[data-theme='light'] [class~='bg-blue-500'] *,
+:root[data-theme='light'] [class~='bg-red-600'] *,
+:root[data-theme='light'] [class~='bg-red-500'] *,
+:root[data-theme='light'] [class~='bg-amber-500'] *,
+:root[data-theme='light'] [class~='bg-emerald-500'] *,
+:root[data-theme='light'] [class~='bg-emerald-600'] *,
+:root[data-theme='light'] [class~='bg-slate-500'] * {
+  color: inherit !important;
+}
+
+:root[data-theme='light'] [class*='bg-blue-600/'],
+:root[data-theme='light'] [class*='bg-blue-500/'],
+:root[data-theme='light'] [class*='bg-red-500/'],
+:root[data-theme='light'] [class*='bg-amber-500/'],
+:root[data-theme='light'] [class*='bg-emerald-500/'],
+:root[data-theme='light'] [class*='bg-slate-500/'] {
+  color: inherit;
+}
+
+:root[data-theme='light'] button[class*='border-blue'][class*='bg-blue-500/10'],
+:root[data-theme='light'] a[class*='border-blue'][class*='bg-blue-500/10'] {
+  background-color: rgba(37, 99, 235, 0.1) !important;
+  color: #1d4ed8 !important;
+}
+
+:root[data-theme='light'] input::placeholder {
+  color: #94a3b8;
+}
+
 button,
 input {
   font: inherit;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

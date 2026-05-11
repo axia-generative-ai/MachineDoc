@@ -21,15 +21,30 @@ from app.core.vectorstore import VectorStore
 from app.schemas.ingest import IngestResponse
 from app.services.ingest_service import ingest_pdf
 
-router = APIRouter(prefix="/api/v1", tags=["ingest"])
+router = APIRouter(prefix="/api/v1", tags=["매뉴얼 업로드"])
 log = logging.getLogger(__name__)
 
 
-@router.post("/ingest", response_model=IngestResponse)
+@router.post(
+    "/ingest",
+    response_model=IngestResponse,
+    summary="매뉴얼 PDF 업로드 + 자동 색인",
+    description=(
+        "PDF 파일을 받아 청킹 → 임베딩 → 벡터DB 색인까지 한 번에 처리하고, "
+        "자동 추출된 오류코드 목록을 응답으로 돌려줍니다.\n\n"
+        "**요청 (multipart/form-data)**:\n"
+        "- `file`: PDF 파일 (텍스트 레이어 필요)\n"
+        "- `manual_id`: ai-service가 색인 키로 쓸 슬러그 (예: `abb_irb_troubleshooting`)\n"
+        "- `equipment_id`: 설비 슬러그 (예: `eq_abb_irb`)\n\n"
+        "**응답**: `{manual_id, equipment_id, source_filename, sections_indexed, chunks_indexed, error_codes[], elapsed_s}`\n\n"
+        "백엔드는 응답의 `error_codes[]`를 자기 `error_code` 테이블에 sync해야 합니다 (E-3 결정).\n\n"
+        "⚠️ 동기 처리. 446페이지 매뉴얼 기준 약 113초 소요. 백엔드 timeout은 300초 권장."
+    ),
+)
 async def ingest_manual(
-    file: UploadFile = File(..., description="PDF binary"),
-    manual_id: str = Form(..., description="Slug ai-service indexes by (e.g. 'abb_irb_troubleshooting')."),
-    equipment_id: str = Form(..., description="Equipment slug (e.g. 'eq_abb_irb')."),
+    file: UploadFile = File(..., description="업로드할 PDF 파일 (텍스트 레이어 포함)"),
+    manual_id: str = Form(..., description="ai-service 색인 키 슬러그 (예: 'abb_irb_troubleshooting')"),
+    equipment_id: str = Form(..., description="설비 슬러그 (예: 'eq_abb_irb')"),
 ) -> IngestResponse:
     if not file.filename or not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF uploads are accepted.")

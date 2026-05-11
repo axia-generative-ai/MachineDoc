@@ -33,9 +33,19 @@ function mapUser(user: BackendUser): User {
   };
 }
 
+const backendRoleValues: Record<UserRole, string> = {
+  ADMIN: '관리자',
+  ENGINEER: '엔지니어',
+  WORKER: '작업자',
+};
+
 export const adminUserApi = {
   async getPendingUsers() {
     const { data } = await apiClient.get<BackendUser[]>('/users/pending');
+    return data.map(mapUser);
+  },
+  async getAllUsers() {
+    const { data } = await apiClient.get<BackendUser[]>('/users/', { params: { limit: 100 } });
     return data.map(mapUser);
   },
   async approveUser(userId: string) {
@@ -43,5 +53,12 @@ export const adminUserApi = {
       state: '로그아웃',
     });
     return mapUser(data);
+  },
+  async updateUserRole(userId: string, role: UserRole) {
+    const { data } = await apiClient.patch<BackendUser>(`/users/${userId}`, { role: backendRoleValues[role] });
+    return mapUser(data);
+  },
+  async deleteUser(userId: string) {
+    await apiClient.delete(`/users/${userId}`);
   },
 };

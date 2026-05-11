@@ -1,11 +1,11 @@
 from fastapi import HTTPException, status, Response
 from sqlalchemy.orm import Session
-from app.models.user import User
+from app.models.user import User, UserState
 from app.crud.crud_user import user_repository
-from app.schemas.user import UserState
 from app.crud.crud_token import token_repository
 from app.schemas.token import RefreshTokenCreate
 from app.core.security import verify_password, create_access_token, create_refresh_token
+from app.core.config import config
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
 from app.core.config import config
@@ -37,7 +37,7 @@ class AuthService:
         refresh_token = create_refresh_token(data=token_data)
         
         # 5. 기존 리프레시 토큰이 있다면 업데이트, 없다면 새로 생성
-        expires_at = datetime.utcnow() + timedelta(days=14)
+        expires_at = datetime.utcnow() + timedelta(days=config.REFRESH_TOKEN_EXPIRE_DAYS)
         
         # 스키마 객체 생성
         token_in = RefreshTokenCreate(
@@ -57,6 +57,7 @@ class AuthService:
             "refresh_token": refresh_token,
             "token_type": "bearer",
             "user_info": {
+                "user_id": user.user_id,
                 "email": user.email,
                 "name": user.name,
                 "department": user.department,
@@ -126,7 +127,7 @@ class AuthService:
             httponly=True,     # JS 접근 불가 (XSS 방어)
             secure=True,       # HTTPS 연결에서만 전송 (운영 환경 필수)
             samesite="lax",    # CSRF 방어 정책
-            max_age=14 * 24 * 60 * 60, # 14일 (초 단위)
+            max_age=config.REFRESH_TOKEN_EXPIRE_SECONDS,
             path="/",          # 모든 경로에서 쿠키 전송
         )
 

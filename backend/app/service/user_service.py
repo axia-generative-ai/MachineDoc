@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-from app.models.user import User
+from app.models.user import User, UserRole, UserState
 from app.crud.crud_user import user_repository
 from app.schemas.user import UserCreate, UserUpdateByAdmin, UserUpdateMe
 
@@ -14,7 +14,15 @@ class UserService:
                 detail="이미 사용 중인 이메일입니다."
             )
         
-        # 2. 회원가입 진행 (CRUD 호출)
+        # 2. 권한 상승 차단: 자가가입으로 ADMIN 절대 불가.
+        # 관리자 권한이 필요하면 기존 관리자가 PATCH /users/{id}로 부여해야 한다.
+        if obj_in.role == UserRole.ADMIN:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="관리자 권한으로 직접 가입할 수 없습니다. 가입 후 기존 관리자에게 권한 부여를 요청하세요."
+            )
+
+        # 3. 회원가입 진행 (CRUD 호출)
         new_user = user_repository.create_user(db, obj_in=obj_in)
         return {"detail": f"사용자(ID: {new_user.name})의 회원가입이 성공적으로 완료되었습니다."}
 
@@ -27,6 +35,7 @@ class UserService:
                 detail="해당 사용자를 찾을 수 없습니다."
             )
         
+        obj_in.state = UserState.LOGOUT
         # 2. CRUD 호출하여 정보 업데이트
         return user_repository.update_user_by_admin(db, db_user=db_user, obj_in=obj_in)
 
