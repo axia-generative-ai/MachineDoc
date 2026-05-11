@@ -8,7 +8,7 @@ class ErrorCode(Base):
     error_code_id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
     
     # 외래키: saved_manual 테이블의 manual_id 참조
-    manual_id = Column(BigInteger, ForeignKey("saved_manual.manual_id"), nullable=False)
+    manual_id = Column(BigInteger, ForeignKey("saved_manual.manual_id", ondelete="CASCADE"), nullable=False)
     
     # 에러 코드 이름 (예: E-102, ERR_MOTOR_01 등)
     code_name = Column(String(255), nullable=False)

@@ -25,6 +25,22 @@ def list_my_manuals(
     return manual_service.list_my_manuals(db, user_id=current_user.user_id)
 
 @router.get(
+    "/error-codes",
+    summary="오류코드 ↔ 매뉴얼 매핑 전체 조회",
+    response_model=List[ErrorCodeMapping],
+)
+def list_error_code_mappings(
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_user),
+):
+    """
+    **error_code** 테이블 전체를 매뉴얼 정보와 join하여 반환합니다.
+    - 관리자가 매뉴얼 업로드 시 등록한 **(매뉴얼, 오류코드)** 쌍 N건이 그대로 노출됩니다.
+    - 인증된 사용자라면 누구나 조회 가능 (관리자 패널에서 매핑 검토용).
+    """
+    return manual_service.list_error_code_mappings(db)
+
+@router.get(
     "/search", 
     summary="설비 매뉴얼 통합 조회", 
     response_model=List[SearchManual]

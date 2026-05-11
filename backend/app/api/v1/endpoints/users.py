@@ -28,6 +28,23 @@ def read_users(
     """
     return user_service.get_user_list(db, skip=skip, limit=limit)
 
+@router.get(
+    "/pending", 
+    summary="승인 대기 사용자 목록 조회 (관리자 전용)",
+    response_model=List[user_schema.UserRead]
+)
+def read_pending_users(
+    db: Session = Depends(deps.get_db),
+    admin_user: User = Depends(deps.get_current_admin_user)
+):
+    """
+    관리자 권한으로 시스템 접속 승인을 기다리고 있는(**PENDING** 상태) 사용자 목록을 조회합니다.
+    - 신규 회원가입 후 아직 승인되지 않은 사용자들을 한눈에 확인할 수 있습니다.
+    - 결과는 **List[UserRead]** 형태로 반환됩니다.
+    - 권한이 없는 일반 사용자가 호출할 경우 **403 Forbidden** 에러가 발생합니다.
+    """
+    return user_service.get_pending_user_list(db)
+
 @router.patch(
     "/me", 
     summary="내 정보 수정",
@@ -86,19 +103,3 @@ def delete_user(
         admin_user_id=admin_user.user_id
     )
 
-@router.get(
-    "/pending", 
-    summary="승인 대기 사용자 목록 조회 (관리자 전용)",
-    response_model=List[user_schema.UserRead]
-)
-def read_pending_users(
-    db: Session = Depends(deps.get_db),
-    admin_user: User = Depends(deps.get_current_admin_user)
-):
-    """
-    관리자 권한으로 시스템 접속 승인을 기다리고 있는(**PENDING** 상태) 사용자 목록을 조회합니다.
-    - 신규 회원가입 후 아직 승인되지 않은 사용자들을 한눈에 확인할 수 있습니다.
-    - 결과는 **List[UserRead]** 형태로 반환됩니다.
-    - 권한이 없는 일반 사용자가 호출할 경우 **403 Forbidden** 에러가 발생합니다.
-    """
-    return user_service.get_pending_user_list(db)

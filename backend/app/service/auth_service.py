@@ -37,7 +37,7 @@ class AuthService:
         refresh_token = create_refresh_token(data=token_data)
         
         # 5. 기존 리프레시 토큰이 있다면 업데이트, 없다면 새로 생성
-        expires_at = datetime.utcnow() + timedelta(days=14)
+        expires_at = datetime.utcnow() + timedelta(days=config.REFRESH_TOKEN_EXPIRE_DAYS)
         
         # 스키마 객체 생성
         token_in = RefreshTokenCreate(
@@ -126,7 +126,7 @@ class AuthService:
             httponly=True,     # JS 접근 불가 (XSS 방어)
             secure=True,       # HTTPS 연결에서만 전송 (운영 환경 필수)
             samesite="lax",    # CSRF 방어 정책
-            max_age=14 * 24 * 60 * 60, # 14일 (초 단위)
+            max_age=config.REFRESH_TOKEN_EXPIRE_SECONDS,
             path="/",          # 모든 경로에서 쿠키 전송
         )
 

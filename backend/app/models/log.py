@@ -21,7 +21,7 @@ class EquipmentLog(Base):
     log_id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
     
     # 외래키: equipment 테이블의 equipment_id 참조
-    equipment_id = Column(BigInteger, ForeignKey("equipment.equipment_id"), nullable=False)
+    equipment_id = Column(BigInteger, ForeignKey("equipment.equipment_id", ondelete="CASCADE"), nullable=False)
     
     data_type = Column(Enum(DataType), nullable=False)
     value = Column(Float, nullable=False)
@@ -35,4 +35,4 @@ class EquipmentLog(Base):
     # 관계 설정: 로그에서 설비 정보에 바로 접근 가능
     equipment = relationship("Equipment", back_populates="logs")
     notification = relationship("Notification", back_populates="log", uselist=False, cascade="all, delete-orphan")
-    search_history = relationship("SearchHistory", back_populates="log", uselist=False)
+    search_history = relationship("SearchHistory", back_populates="log", uselist=False, cascade="all, delete-orphan")

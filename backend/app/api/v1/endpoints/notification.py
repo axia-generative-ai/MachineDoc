@@ -1,12 +1,91 @@
-from fastapi import APIRouter, Depends, status
-from sqlalchemy.orm import Session
+from typing import List
+from fastapi import APIRouter, Depends, status, Query
 from app.db.session import get_db
+from sqlalchemy.orm import Session
+
 from app.api import deps
+from app.crud.crud_notification import notification_repository
 from app.models.notification import ReadStatus, NotificationLevel
 from app.models.user import User
+from app.schemas.notification import NotificationResponse, ReadStatusUpdate
 from app.schemas.notification import NotificationDetailResponse
 from app.service.notification_service import notification_service
+
+
 router = APIRouter()
+
+@router.get(
+    "",
+    summary="알림 이력 조회",
+    response_model=List[NotificationResponse],
+)
+def list_notifications(
+    limit: int = Query(100, le=500),
+    db: Session = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_user),
+):
+    """
+    가상 로그·이상 감지로 발생한 알림 이력을 최신순으로 반환합니다.
+    notification × log × equipment 조인 결과로 설비 코드/위치까지 함께 노출합니다.
+    """
+    return notification_repository.list_with_equipment(db, limit=limit)
+
+@router.get(
+    "/", 
+    status_code=200,
+    summary="알림 목록 조회 (필터 및 페이지네이션)",
+    responses={
+        200: {
+            "description": "조회 성공",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "items": [
+                            {
+                                "id": 1,
+                                "level": "WARN",
+                                "message": "온도 상승 감지",
+                                "is_read": "확인",
+                                "occurred_at": "2026-05-08T15:30:00",
+                                "equipment_code": "TEMP-001"
+                            }
+                        ],
+                        "total": 125,
+                        "page": 1,
+                        "size": 20
+                    }
+                }
+            }
+        }
+    }
+)
+async def get_notifications(
+    skip: int = 0,
+    limit: int = 20,
+    is_read: ReadStatus = None,
+    noti_level: NotificationLevel = None,
+    equipment_code: str = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user)
+):
+    """
+    시스템의 전체 알림 목록을 최신순으로 조회합니다.
+    
+    - **Pagination**: **skip**과 **limit**을 사용하여 페이지 처리가 가능합니다.
+    - **Filtering**: 
+        - **is_read**: 알림 상태별 필터 (미확인/확인/완료)
+        - **noti_level**: 알림 위험도별 필터 (긴급/경고/주의)
+        - **equipment_code**: 특정 설비와 관련된 알림만 조회
+    - **Response**: 각 알림 객체에는 해당 알림의 원인이 된 **equipment_code**가 포함되어 반환됩니다.
+    """
+    return notification_service.get_notifications_list(
+        db, 
+        skip=skip, 
+        limit=limit, 
+        is_read=is_read, 
+        noti_level=noti_level, 
+        equipment_code=equipment_code
+    )
 
 @router.patch(
     "/{notification_id}/status", 
@@ -18,7 +97,7 @@ router = APIRouter()
     })
 async def change_notification_status(
     notification_id: int,
-    new_status: ReadStatus,
+    body: ReadStatusUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(deps.get_current_user)
 ):
@@ -32,11 +111,11 @@ async def change_notification_status(
     updated_notification = notification_service.update_status(
         db, 
         notification_id=notification_id, 
-        new_status=new_status
+        new_status=body.is_read
     )
     
     return {
-        "message": f"알림 상태가 '{new_status.value}'로 변경되었습니다.",
+        "message": f"알림 상태가 '{updated_notification.is_read.value}'(으)로 변경되었습니다.",
         "id": updated_notification.notification_id,
         "status": updated_notification.is_read
     }
@@ -99,59 +178,3 @@ async def get_notification_detail(
         notification_id=notification_id
     )
 
-@router.get(
-    "/", 
-    status_code=200,
-    summary="알림 목록 조회 (필터 및 페이지네이션)",
-    responses={
-        200: {
-            "description": "조회 성공",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "items": [
-                            {
-                                "id": 1,
-                                "level": "WARN",
-                                "message": "온도 상승 감지",
-                                "is_read": "확인",
-                                "occurred_at": "2026-05-08T15:30:00",
-                                "equipment_code": "TEMP-001"
-                            }
-                        ],
-                        "total": 125,
-                        "page": 1,
-                        "size": 20
-                    }
-                }
-            }
-        }
-    }
-)
-async def get_notifications(
-    skip: int = 0,
-    limit: int = 20,
-    is_read: ReadStatus = None,
-    noti_level: NotificationLevel = None,
-    equipment_code: str = None,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(deps.get_current_user)
-):
-    """
-    시스템의 전체 알림 목록을 최신순으로 조회합니다.
-    
-    - **Pagination**: **skip**과 **limit**을 사용하여 페이지 처리가 가능합니다.
-    - **Filtering**: 
-        - **is_read**: 알림 상태별 필터 (미확인/확인/완료)
-        - **noti_level**: 알림 위험도별 필터 (긴급/경고/주의)
-        - **equipment_code**: 특정 설비와 관련된 알림만 조회
-    - **Response**: 각 알림 객체에는 해당 알림의 원인이 된 **equipment_code**가 포함되어 반환됩니다.
-    """
-    return notification_service.get_notifications_list(
-        db, 
-        skip=skip, 
-        limit=limit, 
-        is_read=is_read, 
-        noti_level=noti_level, 
-        equipment_code=equipment_code
-    )

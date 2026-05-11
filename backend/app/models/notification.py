@@ -22,7 +22,7 @@ class Notification(Base):
     notification_id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
     
     # 외래키: log 테이블의 log_id 참조 (1:1 관계)
-    log_id = Column(BigInteger, ForeignKey("log.log_id"), nullable=False, unique=True)
+    log_id = Column(BigInteger, ForeignKey("log.log_id", ondelete="CASCADE"), nullable=False, unique=True)
     
     message = Column(Text, nullable=False) # 알림 내용
     
