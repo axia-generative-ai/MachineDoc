@@ -12,6 +12,7 @@ type BackendNotificationPayload = {
   occured_at?: string;
   occurred_at?: string;
   suggested_error_code?: string | null;
+  suggested_error_codes?: string[];
 };
 
 type BackendNotificationMessage = {
@@ -53,6 +54,13 @@ function mapNotification(payload: BackendNotificationPayload): RealtimeNotificat
   const equipment = payload.equipment_code ?? 'UNKNOWN';
   const notificationId = payload.notification_id == null ? null : Number(payload.notification_id);
 
+  // 다중 코드 우선, 없으면 단일 필드를 1원소 리스트로. 둘 다 없으면 빈 리스트.
+  const codes = payload.suggested_error_codes && payload.suggested_error_codes.length > 0
+    ? payload.suggested_error_codes
+    : payload.suggested_error_code
+      ? [payload.suggested_error_code]
+      : [];
+
   return {
     id: String(payload.notification_id ?? `${Date.now()}-${Math.random()}`),
     notificationId: Number.isNaN(notificationId) ? null : notificationId,
@@ -62,7 +70,8 @@ function mapNotification(payload: BackendNotificationPayload): RealtimeNotificat
     detail: payload.message ?? '이상 징후가 감지되었습니다.',
     createdAt: formatCreatedAt(payload.occured_at ?? payload.occurred_at),
     location: payload.location,
-    suggestedErrorCode: payload.suggested_error_code ?? null,
+    suggestedErrorCode: codes[0] ?? null,
+    suggestedErrorCodes: codes,
     isUnread: true,
   };
 }

@@ -36,6 +36,7 @@ function alertLogItemToRealtime(row: AlertLogItem): RealtimeNotification {
     createdAt: formatCreatedAt(row.occurredAt),
     location: row.location,
     suggestedErrorCode: row.suggestedErrorCode ?? null,
+    suggestedErrorCodes: row.suggestedErrorCodes ?? (row.suggestedErrorCode ? [row.suggestedErrorCode] : []),
     isUnread: row.isRead === '미확인',
   };
 }

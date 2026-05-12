@@ -13,7 +13,9 @@ export type AlertLogItem = {
   equipmentId: number;
   equipmentCode: string;
   location: string;
+  /** @deprecated suggestedErrorCodes[0]과 동일. 하위호환 위해 유지. */
   suggestedErrorCode: string | null;
+  suggestedErrorCodes: string[];
 };
 
 type BackendNotification = {
@@ -27,9 +29,16 @@ type BackendNotification = {
   equipment_code: string;
   location: string;
   suggested_error_code: string | null;
+  suggested_error_codes?: string[];
 };
 
 function mapNotification(data: BackendNotification): AlertLogItem {
+  const codes = data.suggested_error_codes && data.suggested_error_codes.length > 0
+    ? data.suggested_error_codes
+    : data.suggested_error_code
+      ? [data.suggested_error_code]
+      : [];
+
   return {
     notificationId: data.notification_id,
     logId: data.log_id,
@@ -40,7 +49,8 @@ function mapNotification(data: BackendNotification): AlertLogItem {
     equipmentId: data.equipment_id,
     equipmentCode: data.equipment_code,
     location: data.location,
-    suggestedErrorCode: data.suggested_error_code ?? null,
+    suggestedErrorCode: codes[0] ?? null,
+    suggestedErrorCodes: codes,
   };
 }
 

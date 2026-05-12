@@ -9,7 +9,9 @@ export type RealtimeNotification = {
   detail: string;
   createdAt: string;
   location?: string;
+  /** @deprecated suggestedErrorCodes[0]과 동일. 하위호환 위해 유지. */
   suggestedErrorCode?: string | null;
+  suggestedErrorCodes: string[];
   isUnread: boolean;
 };
 

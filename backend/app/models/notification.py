@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import Column, BigInteger, Text, Enum, ForeignKey, DateTime
+from sqlalchemy import Column, BigInteger, String, Text, Enum, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
@@ -34,6 +34,10 @@ class Notification(Base):
     
     # 발생 시각 (로그 발생 시각과 맞춤)
     occurred_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    # 알림 생성 시점에 (equipment, data_type) + anomaly_rules.json 기반으로 결정된
+    # 추천 오류코드. 같은 알림을 새로고침해도 동일한 코드가 노출되도록 박제 저장.
+    suggested_error_code = Column(String(50), nullable=True)
 
     # 관계 설정: 알림에서 해당 로그 정보에 바로 접근 가능
     log = relationship("EquipmentLog", back_populates="notification")

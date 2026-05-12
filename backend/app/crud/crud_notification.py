@@ -27,8 +27,11 @@ class CRUDNotification:
         return db.query(Notification).filter(Notification.is_read == ReadStatus.UNREAD).count()
 
     def list_with_equipment(self, db: Session, *, limit: int = 100) -> List[dict]:
-        """notification × log × equipment join + 장비별 매핑된 첫 오류코드 추천."""
-        
+        """notification × log × equipment join.
+
+        추천 오류코드는 notification.suggested_error_code 컬럼(생성 시점에 박제됨)을
+        그대로 노출한다. 새로고침마다 코드가 바뀌지 않도록 단일 진실 소스를 DB로 통일.
+        """
         rows = (
             db.query(
                 Notification.notification_id,
@@ -37,6 +40,7 @@ class CRUDNotification:
                 Notification.is_read,
                 Notification.level,
                 Notification.occurred_at,
+                Notification.suggested_error_code,
                 EquipmentLog.equipment_id,
                 Equipment.equipment_code,
                 Equipment.location,
@@ -48,24 +52,11 @@ class CRUDNotification:
             .all()
         )
 
-        # equipment_id별 매핑된 첫 코드 캐시 (한 번만 쿼리)
-        eq_to_code: dict[int, str] = {}
-        if rows:
-            eq_ids = list({row.equipment_id for row in rows})
-            mapping_rows = (
-                db.query(SavedManual.equipment_id, ErrorCode.code_name)
-                .join(ErrorCode, ErrorCode.manual_id == SavedManual.manual_id)
-                .filter(SavedManual.equipment_id.in_(eq_ids))
-                .order_by(SavedManual.equipment_id, ErrorCode.error_code_id.asc())
-                .all()
-            )
-            for eq_id, code in mapping_rows:
-                if eq_id not in eq_to_code:
-                    eq_to_code[eq_id] = code
         result = []
         for row in rows:
             d = dict(row._mapping)
-            d["suggested_error_code"] = eq_to_code.get(row.equipment_id)
+            code = d.get("suggested_error_code")
+            d["suggested_error_codes"] = [code] if code else []
             result.append(d)
         return result
 

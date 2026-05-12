@@ -1,5 +1,5 @@
-from typing import Optional
-from pydantic import BaseModel, ConfigDict
+from typing import List, Optional
+from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 from app.models.notification import ReadStatus, NotificationLevel
 from app.schemas.log import InfoLogResponse
@@ -11,6 +11,7 @@ class NotificationCreate(BaseModel):
     message: str
     is_read: ReadStatus = ReadStatus.UNREAD
     level: NotificationLevel
+    suggested_error_code: Optional[str] = None
 
 # 응답용 스키마 (웹소켓이나 API 결과값으로 사용)
 class NotificationResponse(BaseModel):
@@ -23,7 +24,8 @@ class NotificationResponse(BaseModel):
     equipment_id: int
     equipment_code: str
     location: str
-    suggested_error_code: Optional[str] = None
+    suggested_error_code: Optional[str] = None  # 하위호환: suggested_error_codes[0]과 동일.
+    suggested_error_codes: List[str] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
 

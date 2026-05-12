@@ -12,12 +12,16 @@ type NotificationItemProps = {
 
 export function NotificationItem({ notification, onDismiss, onNavigate }: NotificationItemProps) {
   const navigate = useNavigate();
-  const canSearch = Boolean(notification.suggestedErrorCode);
+  // 알림 1건당 코드 1개 (anomaly_rules.json 풀에서 BE가 random.choice).
+  // suggestedErrorCodes는 하위호환용 배열 (길이 0 또는 1).
+  const code = notification.suggestedErrorCode
+    ?? notification.suggestedErrorCodes?.[0]
+    ?? null;
+  const canSearch = Boolean(code);
 
   const handleAnalyze = () => {
-    if (!notification.suggestedErrorCode) return;
-
-    navigate(`/error-search/result?q=${encodeURIComponent(notification.suggestedErrorCode)}`);
+    if (!code) return;
+    navigate(`/error-search/result?q=${encodeURIComponent(code)}`);
     onNavigate?.();
   };
 
@@ -65,7 +69,7 @@ export function NotificationItem({ notification, onDismiss, onNavigate }: Notifi
         className="flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 text-[13px] font-black text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-slate-700"
       >
         <Search className="h-4 w-4" />
-        {canSearch ? `분석 (${notification.suggestedErrorCode})` : '분석 불가'}
+        {canSearch ? `분석 (${code})` : '분석 불가'}
       </button>
     </article>
   );

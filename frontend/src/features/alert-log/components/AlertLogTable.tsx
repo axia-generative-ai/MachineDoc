@@ -89,7 +89,9 @@ export function AlertLogTable({
         ) : (
           <div className="divide-y divide-slate-800/90">
             {items.map((row) => {
-              const canSearch = Boolean(row.suggestedErrorCode);
+              // 알림당 코드 1개 (BE가 풀에서 random.choice). 배열은 하위호환용.
+              const code = row.suggestedErrorCode ?? row.suggestedErrorCodes?.[0] ?? null;
+              const canSearch = Boolean(code);
 
               return (
                 <article
@@ -98,7 +100,7 @@ export function AlertLogTable({
                   className={`grid grid-cols-[180px_120px_180px_1fr_140px_140px_120px] items-center px-7 py-4 text-[15px] font-semibold text-slate-200 transition ${
                     canSearch ? 'cursor-pointer hover:bg-blue-500/[0.05]' : ''
                   }`}
-                  title={canSearch ? `클릭 시 ${row.suggestedErrorCode} 검색` : ''}
+                  title={canSearch ? `클릭 시 ${code} 검색` : ''}
                 >
                   <span className="text-slate-300">{formatTimestamp(row.occurredAt)}</span>
                   <span className="text-center">
@@ -134,10 +136,10 @@ export function AlertLogTable({
                       onClick={() => handleRowSearch(row)}
                       disabled={!canSearch}
                       className="inline-flex h-9 items-center gap-1 rounded-lg border border-blue-400/60 bg-blue-500/10 px-3 text-[13px] font-black text-blue-300 transition hover:bg-blue-500/20 disabled:cursor-not-allowed disabled:opacity-40"
-                      title={canSearch ? `${row.suggestedErrorCode} 검색` : '연결된 오류 코드 없음'}
+                      title={canSearch ? `${code} 검색` : '연결된 오류 코드 없음'}
                     >
                       <Search className="h-4 w-4" />
-                      {row.suggestedErrorCode ?? '-'}
+                      {code ?? '-'}
                     </button>
                   </div>
                 </article>

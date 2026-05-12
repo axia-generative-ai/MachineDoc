@@ -2,6 +2,15 @@ import { apiClient } from '../../../shared/api/apiClient';
 
 export type LogStatus = '정상' | '위험' | '오류';
 export type DetectionDataType = 'TEMPERATURE' | 'VIBRATION';
+export type EquipmentLocation = 'LINE_A' | 'LINE_B' | 'LINE_C';
+export type EquipmentState = 'RUNNING' | 'STOPPED' | 'ERROR';
+
+export type Equipment = {
+  equipmentId: number;
+  equipmentCode: string;
+  location: EquipmentLocation;
+  state: EquipmentState;
+};
 
 export type EquipmentLogResult = {
   logId: number;
@@ -10,6 +19,13 @@ export type EquipmentLogResult = {
   value: number;
   status: LogStatus;
   occurredAt: string;
+};
+
+type BackendEquipment = {
+  equipment_id: number;
+  equipment_code: string;
+  location: EquipmentLocation;
+  state: EquipmentState;
 };
 
 type BackendEquipmentLog = {
@@ -21,15 +37,16 @@ type BackendEquipmentLog = {
   occurred_at: string;
 };
 
-export const equipmentList = [
-  { code: 'EQ-MOTOR-001', label: '정밀 모터 (Line A)' },
-  { code: 'EQ-CONVEYOR-002', label: '표준 컨베이어 (Line A)' },
-  { code: 'EQ-PRESS-003', label: '고온 프레스 (Line B)' },
-  { code: 'EQ-ROBOT-004', label: '정밀 로봇 (Line B)' },
-  { code: 'EQ-WELDING-005', label: '용접기 (Line C)' },
-] as const;
-
 export const detectionApi = {
+  async listEquipments(): Promise<Equipment[]> {
+    const { data } = await apiClient.get<BackendEquipment[]>('/equipment');
+    return data.map((row) => ({
+      equipmentId: row.equipment_id,
+      equipmentCode: row.equipment_code,
+      location: row.location,
+      state: row.state,
+    }));
+  },
   async createVirtualLog(equipmentCode: string) {
     const { data } = await apiClient.post<BackendEquipmentLog>(`/log/virtual/${equipmentCode}`);
     return {

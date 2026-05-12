@@ -31,7 +31,8 @@ export function SearchHero() {
   }, []);
 
   const handleSearch = () => {
-    const nextKeyword = keyword.trim().toUpperCase();
+    // BE가 case-insensitive로 비교하므로 사용자 입력 그대로 보낸다.
+    const nextKeyword = keyword.trim();
     if (!nextKeyword) {
       setHasSearchError(true);
       return;

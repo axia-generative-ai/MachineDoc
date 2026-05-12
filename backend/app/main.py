@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.db.session import engine
 from app.db.base import Base
 
-from app.api.v1.endpoints import dashboard, auth, users, search, manual, log, notification, websocket, prompts
+from app.api.v1.endpoints import dashboard, auth, users, search, manual, log, notification, websocket, prompts, equipment
 
 app = FastAPI(title="MachineDoc API",
     description="스마트 팩토리 보안 및 관리 시스템을 위한 백엔드 API 문서입니다.",
@@ -35,5 +35,7 @@ app.include_router(log.router, prefix="/api/v1/log", tags=["로그"])
 app.include_router(notification.router, prefix="/api/v1/notifications", tags=["알림"])
 
 app.include_router(prompts.router, prefix="/api/v1/prompts", tags=["프롬프트 관리"])
+
+app.include_router(equipment.router, prefix="/api/v1/equipment", tags=["설비"])
 
 app.include_router(websocket.router, prefix="/ws/v1", tags=["웹소켓"])

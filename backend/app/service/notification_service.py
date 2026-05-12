@@ -1,3 +1,4 @@
+import random
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from app.crud.crud_notification import notification_repository
@@ -23,41 +24,38 @@ class NotificationService:
         else:
             noti_level = NotificationLevel.CAUTION   # "주의" (그 외 상황)
 
-        # 2. Notification DB 저장
+        # 2. 추천 오류코드 결정 (anomaly_rules.json 풀에서 random.choice).
+        # INSERT 전에 미리 결정해서 notification.suggested_error_code 컬럼에 박제.
+        # → REST seed 새로고침해도 동일한 코드가 보임.
+        suggested_code = _pick_suggested_code(
+            db,
+            equipment_code=equipment.equipment_code,
+            equipment_id=equipment.equipment_id,
+            data_type=log.data_type.value,
+        )
+
+        # 3. Notification DB 저장 (suggested_error_code 함께 저장)
         new_noti = notification_repository.create(
-            db, 
+            db,
             obj_in=NotificationCreate(
                 log_id=log.log_id,
                 message=alert_message,
                 is_read=ReadStatus.UNREAD,
-                level=noti_level
+                level=noti_level,
+                suggested_error_code=suggested_code,
             )
         )
 
-        # 3. 설비 상태 업데이트 로직
+        # 4. 설비 상태 업데이트 로직
         # 로그 상태가 ERROR인 경우 설비의 가동 상태도 ERROR로 전환
         if str(log.status) == str(LogStatus.ERROR) or log.status == LogStatus.ERROR:
             equipment_repository.update_status(
-                db, 
-                equipment_id=log.equipment_id, 
+                db,
+                equipment_id=log.equipment_id,
                 status=EquipmentStatus.ERROR
             )
 
-        # 5. 응답 스키마 조립 (DB 객체 + 추가 정보)
-        # 해당 장비에 매핑된 첫 오류코드 (없으면 글로벌 fallback)
-        from app.models.saved_manual import SavedManual
-        suggested_code = (
-            db.query(ErrorCode.code_name)
-            .join(SavedManual, SavedManual.manual_id == ErrorCode.manual_id)
-            .filter(SavedManual.equipment_id == equipment.equipment_id)
-            .order_by(ErrorCode.error_code_id.asc())
-            .limit(1)
-            .scalar()
-        )
-        if not suggested_code:
-            suggested_code = (
-                db.query(ErrorCode.code_name).order_by(ErrorCode.error_code_id.asc()).limit(1).scalar()
-            )
+        # 5. 응답 스키마 조립
         response_data = {
             "notification_id": new_noti.notification_id,
             "log_id": new_noti.log_id,
@@ -69,6 +67,7 @@ class NotificationService:
             "equipment_code": equipment.equipment_code,
             "location": equipment.location,
             "suggested_error_code": suggested_code,
+            "suggested_error_codes": [suggested_code] if suggested_code else [],  # 하위호환
         }
         final_response = NotificationResponse(**response_data)
 
@@ -167,5 +166,39 @@ class NotificationService:
             log=InfoLogResponse.model_validate(notification.log),
             equipment=InfoEquipmentResponse.model_validate(notification.log.equipment)
         )
+
+def _pick_suggested_code(
+    db: Session,
+    *,
+    equipment_code: str,
+    equipment_id: int,
+    data_type: str,
+) -> str | None:
+    """이상 감지 시 표시할 추천 오류코드 1개 (랜덤 선택).
+
+    풀: 설비에 매핑된 매뉴얼의 error_code 전체 (data_type 무관).
+    매뉴얼이 없으면 글로벌 error_code 50건으로 fallback.
+    `equipment_code`/`data_type`은 향후 룰 도입 시 시그니처 유지를 위해 받지만
+    현재는 사용 안 함.
+    """
+    from app.models.saved_manual import SavedManual
+
+    eq_rows = (
+        db.query(ErrorCode.code_name)
+        .join(SavedManual, SavedManual.manual_id == ErrorCode.manual_id)
+        .filter(SavedManual.equipment_id == equipment_id)
+        .all()
+    )
+    pool = [r.code_name for r in eq_rows]
+
+    if not pool:
+        global_rows = db.query(ErrorCode.code_name).limit(50).all()
+        pool = [r.code_name for r in global_rows]
+
+    if not pool:
+        return None
+
+    return random.choice(pool)
+
 
 notification_service = NotificationService()

@@ -69,15 +69,16 @@ class SearchService:
         raise_exception = False
         history_id = None
 
-        # 2. error_code 검증 로직
-        db_error = error_code_repository.get_error_code_by_name(db, error_code.upper())
+        # 2. error_code 검증 로직 (case-insensitive — 벤더 코드가 mixed case)
+        db_error = error_code_repository.get_error_code_by_name(db, error_code)
         try:
             if not db_error:
                 search_status = "INVALID_CODE"
                 raise ValueError("Unregistered error code")
 
-            # 3. AI 서버 호출
-            ai_result = await call_ai_server({"error_code": error_code})
+            # 3. AI 서버 호출 — DB에 저장된 정확한 코드명 사용해야 RAG 매칭이 정확해진다.
+            canonical_code = db_error.code_name
+            ai_result = await call_ai_server({"error_code": canonical_code})
             search_status = "COMPLETED"
         except Exception as e:
             if search_status == "PENDING":
