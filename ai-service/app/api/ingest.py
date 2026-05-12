@@ -73,6 +73,11 @@ async def ingest_manual(
 
     error_codes = _collect_error_codes(store, manual_id=manual_id)
 
+    # 새 매뉴얼이 색인됐으니 search 파이프라인 캐시를 무효화한다.
+    # 캐시 안 비우면 PreFilter.known_codes가 stale → 새 코드가 no_match로 떨어짐.
+    # 다음 /search 호출 시 lazy rebuild (첫 호출은 reranker 로드로 수 초 지연).
+    _invalidate_search_pipeline_cache()
+
     return IngestResponse(
         manual_id=result.manual_id,
         equipment_id=result.equipment_id,
@@ -82,6 +87,30 @@ async def ingest_manual(
         error_codes=error_codes,
         elapsed_s=round(result.elapsed_s, 3),
     )
+
+
+def _invalidate_search_pipeline_cache() -> None:
+    """Drop the lru_cache holding the RAG pipeline.
+
+    The pipeline freezes PreFilter.known_codes at build time. After a new
+    manual is indexed, that whitelist is stale — codes from the new manual
+    won't be recognized as identifiers and BM25 boost / equipment filter
+    won't kick in, producing no_match. Clearing here forces a fresh build
+    on the next /search call.
+
+    Import inside the function to avoid a circular import at module load
+    (search.py imports nothing from ingest.py, but keeping the boundary
+    explicit makes the dependency direction obvious).
+    """
+    try:
+        from app.api.search import _pipeline
+        from app.pipelines.rag_v2 import invalidate_filename_cache
+
+        _pipeline.cache_clear()
+        invalidate_filename_cache()
+        log.info("search pipeline + filename cache invalidated after ingest")
+    except Exception:  # noqa: BLE001 — cache clear must never break ingest
+        log.exception("failed to invalidate search pipeline cache")
 
 
 def _collect_error_codes(store: VectorStore, *, manual_id: str) -> list[str]:
