@@ -114,7 +114,7 @@ DATABASE_URL=postgresql://ax_user:9ASs4xPr0j3Ct@db:5432/smart_factory
 EOF
 ```
 
-`backend/.env`, `ai-service/.env`도 각각 필요. 템플릿이 없는 경우 다음 키를 채워 만드세요.
+`backend/.env`, `ai-service/.env`, `frontend/.env` 도 각각 필요. 템플릿이 없는 경우 다음 키를 채워 만드세요.
 
 ```env
 # backend/.env
@@ -125,6 +125,13 @@ ACCESS_TOKEN_EXPIRE_MINUTES=60
 REFRESH_TOKEN_EXPIRE_DAYS=7
 APP_ENV=development
 AI_SERVICE_URL=http://localhost:8001
+# 매뉴얼 PDF 저장 위치 — ai-service/manuals 공유 (ingest 동기 호출 + 색인 소스).
+# 미지정 시 backend가 자동 탐지하지만, 배포 안정성 위해 명시 권장.
+MANUAL_DIR=../ai-service/manuals
+
+# frontend/.env (Vite는 VITE_ 접두어가 붙은 변수만 읽음)
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+VITE_WS_URL=ws://localhost:8000/ws/v1
 
 # ai-service/.env
 LLM_PROVIDER=ollama
@@ -206,7 +213,9 @@ npm run dev
 
 ### 5. PDF 매뉴얼 색인 (선택)
 
-`ai-service/manuals/` 안 8개 PDF는 사전에 색인되어 있어야 RAG가 답합니다. 시드 DB가 이미 있다면 스킵, 처음 셋업하는 경우 ai-service `/api/v1/ingest`로 업로드하거나 ai-service README의 일괄 색인 스크립트를 사용하세요.
+`ai-service/manuals/` 안 8개 PDF는 사전에 색인되어 있어야 RAG가 답합니다. 시드 DB가 이미 있다면 스킵, 처음 셋업하는 경우 어드민 매뉴얼 등록 UI(`POST /api/v1/manual/upload` → backend가 ai-service `/ingest`로 위임)나 ai-service README의 일괄 색인 스크립트를 사용하세요.
+
+> 백엔드는 업로드 시 **원본 파일명**(예: `ga700.pdf`)을 그대로 `saved_manual.file_url`에 저장하고, ai-service도 동일 값을 `manual_chunks_v2.source_file`에 기록합니다. 이 두 컬럼이 일치해야 검색 인용→PDF 열기가 정상 동작합니다. ingest 성공 시 ai-service가 파일명 매핑 + retrieval 캐시를 자동 무효화하므로 새 매뉴얼이 바로 검색됩니다.
 
 ---
 

@@ -53,23 +53,32 @@ logger = logging.getLogger(__name__)
 def _manual_filename_map() -> dict[str, str]:
     """manual_id (slug) → 실 PDF 파일명 매핑.
 
-    Why: V2Hit.manual_id는 ai-service 내부 슬러그(yaskawa_ga700_technical 등)지만
-    백엔드 saved_manual.file_url은 실 파일명(ga700.pdf)이라 출처 인용을 그대로 두면
-    프론트가 PDF를 열지 못한다. manuals/manual_index.json을 source-of-truth로 두고
-    매핑한다. 인덱스가 없거나 키가 비면 슬러그+`.pdf`로 폴백.
+    Source of truth: manual_chunks_v2.source_file (ingest 시점에 기록됨).
+    이전 구현은 manuals/manual_index.json 정적 파일을 읽었지만,
+    /api/v1/ingest로 동적 업로드된 매뉴얼은 JSON에 없어서 LLM 인용에
+    슬러그(manual_7_atv_test.pdf)가 그대로 박혔다. DB가 항상 최신이라
+    그쪽으로 통일. 캐시는 ingest 후 invalidate_filename_cache()로 비운다.
     """
-    candidates = [
-        Path(__file__).resolve().parents[2] / "manuals" / "manual_index.json",
-        Path(__file__).resolve().parents[2] / "data" / "manuals" / "manual_index.json",
-    ]
-    for path in candidates:
-        if path.exists():
-            try:
-                rows = json.loads(path.read_text(encoding="utf-8"))
-                return {r["manual_id"]: r["manual_filename"] for r in rows if r.get("manual_id") and r.get("manual_filename")}
-            except Exception as exc:  # noqa: BLE001
-                logger.warning("manual_index load failed (%s): %s", path, exc)
-    return {}
+    try:
+        store = VectorStore()
+        with store._connect() as conn, conn.cursor() as cur:  # noqa: SLF001
+            cur.execute(
+                """
+                SELECT manual_id, source_file
+                  FROM manual_chunks_v2
+                 WHERE source_file IS NOT NULL
+                 GROUP BY manual_id, source_file
+                """
+            )
+            return {row[0]: row[1] for row in cur.fetchall()}
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("manual_filename_map DB load failed: %s", exc)
+        return {}
+
+
+def invalidate_filename_cache() -> None:
+    """ingest 후 이 캐시도 비워서 새 매뉴얼의 실 파일명이 인용에 반영되게."""
+    _manual_filename_map.cache_clear()
 
 
 def _filename_for(manual_id: str) -> str:

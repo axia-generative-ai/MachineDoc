@@ -62,7 +62,8 @@ tests/eval/results/
 
 # Real customer manuals — never committed (Phase 6 differentiation rework).
 # Cross-validate against synthetic manuals from scripts/generate_manuals.py.
-manuals/*
+# 폴더 자체는 보존(.gitkeep), 내부 PDF만 무시 (대소문자 무관).
+manuals/*.pdf
 
 # Manual web harness & backend stub — local validation only, not production.
 tests/manual/

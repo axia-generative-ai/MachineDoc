@@ -125,6 +125,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES=60
 REFRESH_TOKEN_EXPIRE_DAYS=7
 APP_ENV=development
 AI_SERVICE_URL=http://localhost:8001
+# Manual PDFs are stored in ai-service/manuals (shared with ai-service for ingest).
+# Backend auto-detects when unset, but pin it explicitly for stable deploys.
+MANUAL_DIR=../ai-service/manuals
 
 # ai-service/.env
 LLM_PROVIDER=ollama
@@ -139,6 +142,15 @@ LOG_LEVEL=INFO
 PIPELINE_VERSION=v2
 CHUNKING_STRATEGY=v2
 ```
+
+```env
+# frontend/.env (Vite reads only VITE_-prefixed vars)
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+VITE_WS_URL=ws://localhost:8000/ws/v1
+```
+
+> Vite loads `.env` only at dev-server startup — restart `npm run dev` after editing.
+> `VITE_API_BASE_URL` must include the `/api/v1` prefix (backend mounts every router under it); `VITE_WS_URL` must include `/ws/v1` (WebSocket router prefix).
 
 ### 1. Start Postgres + pgvector
 
@@ -206,7 +218,9 @@ Open http://localhost:5173 in your browser.
 
 ### 5. Index PDF manuals (optional)
 
-The 8 PDFs in `ai-service/manuals/` need to be pre-indexed for RAG to return results. If you applied the demo seed, the index is already populated — otherwise upload through `POST /api/v1/ingest` or use the bulk-ingest script described in `ai-service/README.md`.
+The 8 PDFs in `ai-service/manuals/` need to be pre-indexed for RAG to return results. If you applied the demo seed, the index is already populated — otherwise upload through the admin manual-registration UI (`POST /api/v1/manual/upload` via backend, which forwards to ai-service `/ingest`) or the bulk-ingest script described in `ai-service/README.md`.
+
+> Backend keeps each upload's **original filename** (e.g. `ga700.pdf`) for `saved_manual.file_url`; ai-service mirrors it in `manual_chunks_v2.source_file`. The two columns must stay in sync for citation→PDF resolution to work. After every successful ingest the ai-service automatically clears its filename + retrieval caches so new manuals are immediately searchable.
 
 ---
 

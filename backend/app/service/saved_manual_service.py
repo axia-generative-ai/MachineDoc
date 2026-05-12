@@ -153,9 +153,20 @@ class ManualService:
         os.makedirs(upload_dir, exist_ok=True)
         
         original_filename = file.filename or "manual.pdf"
-        file_extension = os.path.splitext(original_filename)[1] or ".pdf"
-        safe_filename = f"{uuid4()}{file_extension}"
+        # 원본명 유지 (path traversal 차단 위해 basename만 사용).
+        # ai-service 인용은 원본 파일명을 박으므로 saved_manual.file_url도 원본명이어야
+        # _extract_citations에서 매핑된다.
+        safe_filename = os.path.basename(original_filename)
         file_path = os.path.join(upload_dir, safe_filename)
+
+        # 동일 파일명 충돌 시 _1, _2... suffix
+        if os.path.exists(file_path):
+            stem, ext = os.path.splitext(safe_filename)
+            i = 1
+            while os.path.exists(os.path.join(upload_dir, f"{stem}_{i}{ext}")):
+                i += 1
+            safe_filename = f"{stem}_{i}{ext}"
+            file_path = os.path.join(upload_dir, safe_filename)
 
         try:
             with open(file_path, "wb") as buffer:
