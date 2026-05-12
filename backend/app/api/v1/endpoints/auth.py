@@ -84,7 +84,6 @@ def logout(
 )
 async def refresh_token(
     # response: Response,
-    request_data: TokenRefreshRequest = Body(...),
     db: Session = Depends(get_db),
     refresh_token: str = Cookie(None)
 ):
