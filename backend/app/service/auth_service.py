@@ -6,7 +6,7 @@ from app.crud.crud_token import token_repository
 from app.schemas.token import RefreshTokenCreate
 from app.core.security import verify_password, create_access_token, create_refresh_token
 from app.core.config import config
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
 from app.core.config import config
 
@@ -101,7 +101,9 @@ class AuthService:
                 detail="존재하지 않는 리프레시 토큰입니다."
             )
         
-        if db_token.expires_at < datetime.utcnow():
+        now = datetime.now(timezone.utc)
+
+        if db_token.expires_at < now:
             # 만료된 토큰은 DB에서 삭제 후 에러 반환
             token_repository.delete_refresh_token(db, user_id=db_token.user_id)
             db.commit()
