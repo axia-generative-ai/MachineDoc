@@ -95,7 +95,7 @@ export function AlertLogTable({
 
               return (
                 <article
-                  key={row.notificationId}
+                  key={`${row.notificationId ?? row.logId}`}
                   onClick={() => canSearch && handleRowSearch(row)}
                   className={`grid grid-cols-[180px_120px_180px_1fr_140px_140px_120px] items-center px-7 py-4 text-[15px] font-semibold text-slate-200 transition ${
                     canSearch ? 'cursor-pointer hover:bg-blue-500/[0.05]' : ''
