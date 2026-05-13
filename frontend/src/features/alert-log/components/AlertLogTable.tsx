@@ -95,7 +95,7 @@ export function AlertLogTable({
 
               return (
                 <article
-                  key={row.notificationId}
+                  key={`${row.notificationId ?? row.logId}`}
                   onClick={() => canSearch && handleRowSearch(row)}
                   className={`grid grid-cols-[180px_120px_180px_1fr_140px_140px_120px] items-center px-7 py-4 text-[15px] font-semibold text-slate-200 transition ${
                     canSearch ? 'cursor-pointer hover:bg-blue-500/[0.05]' : ''
@@ -124,7 +124,7 @@ export function AlertLogTable({
                       className="h-9 rounded-lg border border-slate-700 bg-slate-950/50 px-2 text-[13px] font-bold text-white outline-none focus:border-blue-400/70 disabled:opacity-50"
                     >
                       {READ_STATUS_OPTIONS.map((option) => (
-                        <option key={option} value={option} className="bg-slate-950 text-white">
+                        <option key={option} value={option}>
                           {option}
                         </option>
                       ))}

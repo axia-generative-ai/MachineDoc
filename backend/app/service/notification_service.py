@@ -125,7 +125,7 @@ class NotificationService:
                 eq_code = n.log.equipment.equipment_code
 
             item = {
-                "id": n.notification_id,
+                "notification_id": n.notification_id,
                 "level": n.level,
                 "message": n.message,
                 "is_read": n.is_read,         # Enum 값이 반환됨 (미확인/확인/완료)

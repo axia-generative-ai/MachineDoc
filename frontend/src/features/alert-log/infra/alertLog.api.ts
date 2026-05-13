@@ -60,7 +60,7 @@ export const alertLogApi = {
     return data.map(mapNotification);
   },
   async updateReadStatus(notificationId: number, isRead: ReadStatus): Promise<AlertLogItem> {
-    const { data } = await apiClient.patch<BackendNotification>(`/notifications/${notificationId}`, { is_read: isRead });
+    const { data } = await apiClient.patch<BackendNotification>(`/notifications/${notificationId}/status`, { is_read: isRead });
     return mapNotification(data);
   },
 };

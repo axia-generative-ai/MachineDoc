@@ -108,17 +108,11 @@ async def change_notification_status(
     - **COMPLETED (완료)**: 알림에 대한 후속 조치(설비 점검 등)가 마무리된 상태
     """
     # 서비스 레이어 호출
-    updated_notification = notification_service.update_status(
+    return notification_service.update_status(
         db, 
         notification_id=notification_id, 
         new_status=body.is_read
     )
-    
-    return {
-        "message": f"알림 상태가 '{updated_notification.is_read.value}'(으)로 변경되었습니다.",
-        "id": updated_notification.notification_id,
-        "status": updated_notification.is_read
-    }
 
 @router.get(
     "/{notification_id}", 

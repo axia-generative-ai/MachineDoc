@@ -43,7 +43,7 @@ export function useAlertLog(filter: (typeof alertFilters)[number], page: number)
 
     try {
       const updated = await alertLogApi.updateReadStatus(notificationId, isRead);
-      setItems((prev) => prev.map((item) => (item.notificationId === notificationId ? updated : item)));
+      setItems((prev) => prev.map((item) => (item.notificationId === notificationId ? { ...item, isRead: updated.isRead } : item)));
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : '상태 변경에 실패했습니다.');
     } finally {
