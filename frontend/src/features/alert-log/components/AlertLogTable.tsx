@@ -124,7 +124,7 @@ export function AlertLogTable({
                       className="h-9 rounded-lg border border-slate-700 bg-slate-950/50 px-2 text-[13px] font-bold text-white outline-none focus:border-blue-400/70 disabled:opacity-50"
                     >
                       {READ_STATUS_OPTIONS.map((option) => (
-                        <option key={option} value={option}>
+                        <option key={option} value={option} className="bg-slate-950 text-white">
                           {option}
                         </option>
                       ))}
